@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+uv.lock
+AGENTS.md
+PLAN.md
+packages/schemas/generated/
+apps/web/next-env.d.ts
+.artifacts/

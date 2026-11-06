@@ -1,0 +1,37 @@
+name: Fixture checks
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-24.04
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.13.7"
+      - run: uv python install
+      - run: corepack enable
+      - run: make bootstrap
+      - run: make infra-up
+      - run: make contracts-check lint typecheck
+      - run: corepack pnpm test
+      - run: uv run --locked pytest -q
+      - run: corepack pnpm build
+      - run: corepack pnpm exec playwright install --with-deps chromium
+      - run: corepack pnpm exec playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: fixture-failure-reports
+          path: |
+            playwright-report/
+            test-results/

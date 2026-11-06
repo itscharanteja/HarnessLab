@@ -1,0 +1,13 @@
+{
+  "name": "@harnesslab/harness-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@harnesslab/schemas": "workspace:*"
+  },
+  "exports": "./src/index.ts"
+}

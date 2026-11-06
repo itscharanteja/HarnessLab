@@ -1,0 +1,228 @@
+name: harnesslab
+
+x-python-health: &python-health
+  test:
+    - CMD
+    - python
+    - -c
+    - 'import urllib.request; urllib.request.urlopen("http://127.0.0.1:8000/readyz", timeout=3).close()'
+  interval: 3s
+  timeout: 4s
+  retries: 20
+
+services:
+  control-db:
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
+    environment:
+      POSTGRES_USER: hl_control_admin
+      POSTGRES_PASSWORD: fixture_control_admin
+      POSTGRES_DB: harnesslab_control
+    ports:
+      - "127.0.0.1:${CONTROL_DB_PORT:-55432}:5432"
+    volumes:
+      - control-data:/var/lib/postgresql/data
+      - ./control-init.sql:/docker-entrypoint-initdb.d/01-roles.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          "hl_control_admin",
+          "-d",
+          "harnesslab_control",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [control, control-cli]
+
+  sandbox-db:
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
+    environment:
+      POSTGRES_USER: hl_sandbox_admin
+      POSTGRES_PASSWORD: fixture_sandbox_admin
+      POSTGRES_DB: harnesslab_sandbox
+    ports:
+      - "127.0.0.1:${SANDBOX_DB_PORT:-55433}:5432"
+    volumes:
+      - sandbox-data:/var/lib/postgresql/data
+      - ./sandbox-init.sql:/docker-entrypoint-initdb.d/01-roles.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          "hl_sandbox_admin",
+          "-d",
+          "harnesslab_sandbox",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [sandbox, sandbox-cli]
+
+  redis:
+    image: redis:7-bookworm@sha256:2e3eb11462c4e3759e6972678dd051d150ff54b1e60714b3c33b701260172a90
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--maxmemory-policy",
+        "noeviction",
+      ]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [control]
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/node.Dockerfile
+      target: api
+    init: true
+    environment:
+      CONTROL_API_DSN: postgresql://hl_api:fixture_api@control-db:5432/harnesslab_control
+      REDIS_URL: redis://redis:6379/0
+      HL_MODE: fixture
+    ports:
+      - "127.0.0.1:${API_PORT:-4000}:4000"
+    depends_on:
+      control-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - 'fetch("http://127.0.0.1:4000/readyz").then(r=>{if(!r.ok) process.exit(1)})'
+      interval: 3s
+      timeout: 4s
+      retries: 20
+    networks: [edge, control]
+
+  dispatcher:
+    build:
+      context: ../..
+      dockerfile: infra/docker/node.Dockerfile
+      target: dispatcher
+    init: true
+    environment:
+      CONTROL_DISPATCHER_DSN: postgresql://hl_dispatcher:fixture_dispatcher@control-db:5432/harnesslab_control
+      REDIS_URL: redis://redis:6379/0
+      RUNNER_URL: http://runner:8000
+      EVALUATOR_URL: http://evaluator:8000
+      OPTIMIZER_URL: http://optimizer:8000
+      HL_MODE: fixture
+    depends_on:
+      control-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      runner:
+        condition: service_healthy
+      evaluator:
+        condition: service_healthy
+      optimizer:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - 'fetch("http://127.0.0.1:4001/readyz").then(r=>{if(!r.ok) process.exit(1)})'
+      interval: 3s
+      timeout: 4s
+      retries: 20
+    networks: [control, private]
+
+  runner:
+    build:
+      context: ../..
+      dockerfile: infra/docker/python.Dockerfile
+      args:
+        SERVICE_PATH: agent-runner
+        SERVICE_PACKAGE: harnesslab-runner
+    init: true
+    command: ["uvicorn", "harnesslab_runner.http:app", "--host", "0.0.0.0"]
+    environment:
+      HL_MODE: fixture
+    healthcheck: *python-health
+    networks: [private, sandbox]
+
+  evaluator:
+    build:
+      context: ../..
+      dockerfile: infra/docker/python.Dockerfile
+      args:
+        SERVICE_PATH: evaluator
+        SERVICE_PACKAGE: harnesslab-eval
+    init: true
+    command: ["uvicorn", "harnesslab_eval.http:app", "--host", "0.0.0.0"]
+    healthcheck: *python-health
+    networks: [private]
+
+  optimizer:
+    build:
+      context: ../..
+      dockerfile: infra/docker/python.Dockerfile
+      args:
+        SERVICE_PATH: optimizer
+        SERVICE_PACKAGE: harnesslab-opt
+    init: true
+    command: ["uvicorn", "harnesslab_opt.http:app", "--host", "0.0.0.0"]
+    environment:
+      HL_MODE: fixture
+    healthcheck: *python-health
+    networks: [private]
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/node.Dockerfile
+      target: web
+    init: true
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - 'fetch("http://127.0.0.1:3000/").then(r=>{if(!r.ok) process.exit(1)})'
+      interval: 3s
+      timeout: 4s
+      retries: 20
+    networks: [edge]
+
+networks:
+  edge: {}
+  control-cli: {}
+  sandbox-cli: {}
+  control:
+    internal: true
+  sandbox:
+    internal: true
+  private:
+    internal: true
+
+volumes:
+  control-data:
+  sandbox-data:
+  redis-data:

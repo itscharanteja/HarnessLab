@@ -1,0 +1,10 @@
+BEGIN;
+CREATE ROLE hl_api LOGIN PASSWORD 'fixture_api';
+CREATE ROLE hl_dispatcher LOGIN PASSWORD 'fixture_dispatcher';
+CREATE ROLE hl_migrator LOGIN PASSWORD 'fixture_migrator';
+CREATE ROLE hl_promoter LOGIN PASSWORD 'fixture_promoter';
+REVOKE ALL ON DATABASE harnesslab_control FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT CONNECT ON DATABASE harnesslab_control TO hl_api, hl_dispatcher, hl_migrator, hl_promoter;
+GRANT CREATE ON DATABASE harnesslab_control TO hl_migrator;
+COMMIT;

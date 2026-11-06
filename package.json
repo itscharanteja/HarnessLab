@@ -1,0 +1,30 @@
+{
+  "name": "harnesslab",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": "22.x"
+  },
+  "type": "module",
+  "scripts": {
+    "contracts:generate": "node scripts/generate-contracts.mjs",
+    "lint": "eslint . && prettier --check .",
+    "typecheck": "pnpm --recursive --if-present typecheck",
+    "test": "vitest run",
+    "build": "pnpm --filter @harnesslab/web build"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "16.4.5",
+    "@playwright/test": "1.65.0",
+    "@types/node": "22.20.5",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "fastify": "5.12.8",
+    "json-schema-to-typescript": "16.0.0",
+    "prettier": "3.9.10",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
+  }
+}

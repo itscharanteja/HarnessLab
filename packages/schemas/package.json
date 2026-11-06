@@ -1,0 +1,21 @@
+{
+  "name": "@harnesslab/schemas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1"
+  },
+  "exports": {
+    "./types": "./generated/contracts.ts",
+    "./validate": "./src/validate.ts",
+    "./health": "./src/health.ts"
+  },
+  "devDependencies": {
+    "fastify": "5.12.8"
+  }
+}

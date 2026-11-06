@@ -1,0 +1,16 @@
+{
+  "name": "@harnesslab/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "start": "node --disable-warning=ExperimentalWarning src/server.ts"
+  },
+  "dependencies": {
+    "@harnesslab/control-db": "workspace:*",
+    "@harnesslab/schemas": "workspace:*",
+    "fastify": "5.12.8",
+    "ioredis": "5.10.1"
+  }
+}

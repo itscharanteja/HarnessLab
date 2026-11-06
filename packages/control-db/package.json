@@ -1,0 +1,16 @@
+{
+  "name": "@harnesslab/control-db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "exports": "./src/index.ts",
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
+}

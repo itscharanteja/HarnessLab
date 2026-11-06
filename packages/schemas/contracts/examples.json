@@ -1,0 +1,1002 @@
+[
+  {
+    "contract": "HarnessConfig",
+    "label": "baseline document",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "model_profile": "dataops-fixed-v1",
+      "prompt": {
+        "task_guidance": "Investigate the request and cite the returned data."
+      },
+      "workflow": {
+        "schema_inspection": "on_error",
+        "verify_numeric_answers": false,
+        "retry_policy": "error_aware"
+      },
+      "context": {
+        "recent_tool_results": 4
+      },
+      "limits": {
+        "max_tool_calls": 12,
+        "max_retries_per_tool": 2,
+        "max_model_turns": 10,
+        "max_input_tokens": 12000,
+        "max_output_tokens": 3000
+      },
+      "output_contract": "dataops-answer-v1",
+      "tool_registry": "dataops-mcp-v1",
+      "safety_profile": "readonly-synthetic-v1"
+    }
+  },
+  {
+    "contract": "TaskInput",
+    "label": "development task",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+      "split": "dev",
+      "variant_id": "variant-a",
+      "category": "schema_discovery",
+      "prompt": "How many orders were paid?",
+      "output_keys": [
+        {
+          "key": "paid_orders",
+          "unit": "count",
+          "value_type": "integer"
+        }
+      ],
+      "allowed_clarification_fields": []
+    }
+  },
+  {
+    "contract": "WorkerAnswer",
+    "label": "evidence-backed answer",
+    "valid": true,
+    "payload": {
+      "kind": "answer",
+      "findings": [
+        {
+          "key": "paid_orders",
+          "value": 4,
+          "unit": "count",
+          "evidence": [
+            {
+              "kind": "cell",
+              "query_id": "q_1",
+              "row": 0,
+              "column": "order_count"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "contract": "WorkerAnswer",
+    "label": "clarification",
+    "valid": true,
+    "payload": {
+      "kind": "clarify",
+      "missing_fields": ["period"],
+      "question": "Which reporting period should I use?"
+    }
+  },
+  {
+    "contract": "WorkerAction",
+    "label": "SQL tool request",
+    "valid": true,
+    "payload": {
+      "action": {
+        "kind": "tool",
+        "name": "execute_readonly_sql",
+        "arguments": {
+          "sql": "SELECT count(*) AS order_count FROM order_records"
+        }
+      }
+    }
+  },
+  {
+    "contract": "WorkerAction",
+    "label": "finished action",
+    "valid": true,
+    "payload": {
+      "action": {
+        "kind": "finish",
+        "answer": {
+          "kind": "clarify",
+          "missing_fields": ["period"],
+          "question": "Which reporting period should I use?"
+        }
+      }
+    }
+  },
+  {
+    "contract": "ToolResult",
+    "label": "bounded SQL rows",
+    "valid": true,
+    "payload": {
+      "status": "ok",
+      "name": "execute_readonly_sql",
+      "data": {
+        "query_id": "q_1",
+        "columns": [
+          {
+            "name": "order_count",
+            "type": "integer"
+          }
+        ],
+        "rows": [[4]],
+        "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  {
+    "contract": "ToolResult",
+    "label": "typed SQL error",
+    "valid": true,
+    "payload": {
+      "status": "error",
+      "name": "execute_readonly_sql",
+      "error_id": "e_1",
+      "code": "schema_error"
+    }
+  },
+  {
+    "contract": "TraceEvent",
+    "label": "recorded tool result",
+    "valid": true,
+    "payload": {
+      "kind": "tool_result",
+      "run_id": "12345678-1234-4234-a234-123456789abc",
+      "seq": 3,
+      "elapsed_ms": 50,
+      "outcome_code": "ok",
+      "correlation_id": "tool_1",
+      "payload": {
+        "status": "ok",
+        "name": "execute_readonly_sql",
+        "data": {
+          "query_id": "q_1",
+          "columns": [
+            {
+              "name": "order_count",
+              "type": "integer"
+            }
+          ],
+          "rows": [[4]],
+          "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      }
+    }
+  },
+  {
+    "contract": "Proposal",
+    "label": "typed replacement",
+    "valid": true,
+    "payload": {
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/workflow/schema_inspection",
+          "value": "before_first_sql"
+        }
+      ],
+      "expected_metric": "invalid_sql_rate",
+      "direction": "decrease",
+      "rationale": "Inspect the schema before constructing a query.",
+      "evidence_refs": [
+        {
+          "run_id": "12345678-1234-4234-a234-123456789abc",
+          "seq": 3
+        }
+      ]
+    }
+  },
+  {
+    "contract": "RunManifest",
+    "label": "pinned fixture manifest",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "run_id": "12345678-1234-4234-a234-123456789abc",
+      "mode": "fixture",
+      "stage": "diagnose",
+      "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+      "repeat": 1,
+      "task_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "config_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "dataset_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "benchmark_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "software_revision": "fixture",
+      "evaluator_version": "v1",
+      "safety_profile": "readonly-synthetic-v1",
+      "worker": {
+        "snapshot": "fixture-v1",
+        "timeout_ms": 1000,
+        "reasoning_effort": null,
+        "temperature": null,
+        "top_p": null
+      },
+      "worker_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "price_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "schedule_seed": 20251106
+    }
+  },
+  {
+    "contract": "EvaluationReport",
+    "label": "ineligible fixture comparison",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "experiment_id": "12345678-1234-4234-a234-123456789abc",
+      "baseline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "scope": "dev_fixture",
+      "mode": "fixture",
+      "policy_version": "v1",
+      "manifest_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "roster_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "report_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "complete": true,
+      "winner": false,
+      "baseline": {
+        "scheduled": 6,
+        "attempted": 6,
+        "successes": 6,
+        "success_rate": "1",
+        "tool_calls": 12,
+        "tool_calls_per_success": "2",
+        "mean_calls_successful": "2",
+        "worker_cost_microusd": 0,
+        "worker_cost_per_success": "0",
+        "invalid_sql_attempts": 0,
+        "sql_attempts": 6,
+        "invalid_sql_rate": "0",
+        "recovered_faults": 0,
+        "scheduled_recoverable_faults": 0,
+        "recovery_rate": null,
+        "p50_ms": 130,
+        "p95_ms": 150,
+        "safety_violations": 0
+      },
+      "candidate": {
+        "scheduled": 6,
+        "attempted": 6,
+        "successes": 6,
+        "success_rate": "1",
+        "tool_calls": 12,
+        "tool_calls_per_success": "2",
+        "mean_calls_successful": "2",
+        "worker_cost_microusd": 0,
+        "worker_cost_per_success": "0",
+        "invalid_sql_attempts": 0,
+        "sql_attempts": 6,
+        "invalid_sql_rate": "0",
+        "recovered_faults": 0,
+        "scheduled_recoverable_faults": 0,
+        "recovery_rate": null,
+        "p50_ms": 130,
+        "p95_ms": 150,
+        "safety_violations": 0
+      },
+      "paired": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 6,
+        "success_delta": "0",
+        "cost_reduction": null
+      },
+      "categories": [],
+      "uncertainty": null,
+      "gates": [
+        {
+          "gate": "provenance",
+          "status": "failed",
+          "reason": "ineligible_fixture"
+        }
+      ]
+    }
+  },
+  {
+    "contract": "QueueReference",
+    "label": "durable work reference",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "work_id": "12345678-1234-4234-a234-123456789abc",
+      "generation": 1
+    }
+  },
+  {
+    "contract": "ExperimentSubmit",
+    "label": "public preset",
+    "valid": true,
+    "payload": {
+      "scope": "demo_fixture"
+    }
+  },
+  {
+    "contract": "DecisionRequest",
+    "label": "reviewer command",
+    "valid": true,
+    "payload": {
+      "candidate_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "report_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected_revision": 1,
+      "reason": "Reviewed paired results."
+    }
+  },
+  {
+    "contract": "ExecuteTaskRequest",
+    "label": "private execution envelope",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "task": {
+        "schema_version": 1,
+        "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+        "split": "dev",
+        "variant_id": "variant-a",
+        "category": "schema_discovery",
+        "prompt": "How many orders were paid?",
+        "output_keys": [
+          {
+            "key": "paid_orders",
+            "unit": "count",
+            "value_type": "integer"
+          }
+        ],
+        "allowed_clarification_fields": []
+      },
+      "harness": {
+        "schema_version": 1,
+        "model_profile": "dataops-fixed-v1",
+        "prompt": {
+          "task_guidance": "Investigate the request and cite the returned data."
+        },
+        "workflow": {
+          "schema_inspection": "on_error",
+          "verify_numeric_answers": false,
+          "retry_policy": "error_aware"
+        },
+        "context": {
+          "recent_tool_results": 4
+        },
+        "limits": {
+          "max_tool_calls": 12,
+          "max_retries_per_tool": 2,
+          "max_model_turns": 10,
+          "max_input_tokens": 12000,
+          "max_output_tokens": 3000
+        },
+        "output_contract": "dataops-answer-v1",
+        "tool_registry": "dataops-mcp-v1",
+        "safety_profile": "readonly-synthetic-v1"
+      },
+      "manifest": {
+        "schema_version": 1,
+        "run_id": "12345678-1234-4234-a234-123456789abc",
+        "mode": "fixture",
+        "stage": "diagnose",
+        "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+        "repeat": 1,
+        "task_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "config_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "dataset_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "benchmark_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "software_revision": "fixture",
+        "evaluator_version": "v1",
+        "safety_profile": "readonly-synthetic-v1",
+        "worker": {
+          "snapshot": "fixture-v1",
+          "timeout_ms": 1000,
+          "reasoning_effort": null,
+          "temperature": null,
+          "top_p": null
+        },
+        "worker_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "price_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "schedule_seed": 20251106
+      },
+      "fault": null,
+      "deadline": "2025-09-02T01:02:03Z"
+    }
+  },
+  {
+    "contract": "PageQuery",
+    "label": "optional paging fields",
+    "valid": true,
+    "payload": {}
+  },
+  {
+    "contract": "HarnessConfig",
+    "label": "unexpected key",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "model_profile": "dataops-fixed-v1",
+      "prompt": {
+        "task_guidance": "Investigate the request and cite the returned data."
+      },
+      "workflow": {
+        "schema_inspection": "on_error",
+        "verify_numeric_answers": false,
+        "retry_policy": "error_aware"
+      },
+      "context": {
+        "recent_tool_results": 4
+      },
+      "limits": {
+        "max_tool_calls": 12,
+        "max_retries_per_tool": 2,
+        "max_model_turns": 10,
+        "max_input_tokens": 12000,
+        "max_output_tokens": 3000
+      },
+      "output_contract": "dataops-answer-v1",
+      "tool_registry": "dataops-mcp-v1",
+      "safety_profile": "readonly-synthetic-v1",
+      "custom_tool": "network"
+    }
+  },
+  {
+    "contract": "HarnessConfig",
+    "label": "boolean cannot stand in for integer",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "model_profile": "dataops-fixed-v1",
+      "prompt": {
+        "task_guidance": "Investigate the request and cite the returned data."
+      },
+      "workflow": {
+        "schema_inspection": "on_error",
+        "verify_numeric_answers": false,
+        "retry_policy": "error_aware"
+      },
+      "context": {
+        "recent_tool_results": true
+      },
+      "limits": {
+        "max_tool_calls": 12,
+        "max_retries_per_tool": 2,
+        "max_model_turns": 10,
+        "max_input_tokens": 12000,
+        "max_output_tokens": 3000
+      },
+      "output_contract": "dataops-answer-v1",
+      "tool_registry": "dataops-mcp-v1",
+      "safety_profile": "readonly-synthetic-v1"
+    }
+  },
+  {
+    "contract": "HarnessConfig",
+    "label": "cannot increase trusted model-turn ceiling",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "model_profile": "dataops-fixed-v1",
+      "prompt": {
+        "task_guidance": "Investigate the request and cite the returned data."
+      },
+      "workflow": {
+        "schema_inspection": "on_error",
+        "verify_numeric_answers": false,
+        "retry_policy": "error_aware"
+      },
+      "context": {
+        "recent_tool_results": 4
+      },
+      "limits": {
+        "max_tool_calls": 12,
+        "max_retries_per_tool": 2,
+        "max_model_turns": 11,
+        "max_input_tokens": 12000,
+        "max_output_tokens": 3000
+      },
+      "output_contract": "dataops-answer-v1",
+      "tool_registry": "dataops-mcp-v1",
+      "safety_profile": "readonly-synthetic-v1"
+    }
+  },
+  {
+    "contract": "HarnessConfig",
+    "label": "whitespace-only guidance",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "model_profile": "dataops-fixed-v1",
+      "prompt": {
+        "task_guidance": "   "
+      },
+      "workflow": {
+        "schema_inspection": "on_error",
+        "verify_numeric_answers": false,
+        "retry_policy": "error_aware"
+      },
+      "context": {
+        "recent_tool_results": 4
+      },
+      "limits": {
+        "max_tool_calls": 12,
+        "max_retries_per_tool": 2,
+        "max_model_turns": 10,
+        "max_input_tokens": 12000,
+        "max_output_tokens": 3000
+      },
+      "output_contract": "dataops-answer-v1",
+      "tool_registry": "dataops-mcp-v1",
+      "safety_profile": "readonly-synthetic-v1"
+    }
+  },
+  {
+    "contract": "TaskInput",
+    "label": "no reference values",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+      "split": "dev",
+      "variant_id": "variant-a",
+      "category": "schema_discovery",
+      "prompt": "How many orders were paid?",
+      "output_keys": [
+        {
+          "key": "paid_orders",
+          "unit": "count",
+          "value_type": "integer"
+        }
+      ],
+      "allowed_clarification_fields": [],
+      "expected": 4
+    }
+  },
+  {
+    "contract": "WorkerAnswer",
+    "label": "answer requires evidence",
+    "valid": false,
+    "payload": {
+      "kind": "answer",
+      "findings": [
+        {
+          "key": "paid_orders",
+          "value": 4,
+          "unit": "count",
+          "evidence": []
+        }
+      ]
+    }
+  },
+  {
+    "contract": "WorkerAnswer",
+    "label": "clarification fields are unique",
+    "valid": false,
+    "payload": {
+      "kind": "clarify",
+      "missing_fields": ["period", "period"],
+      "question": "Which reporting period should I use?"
+    }
+  },
+  {
+    "contract": "WorkerAction",
+    "label": "unknown tool",
+    "valid": false,
+    "payload": {
+      "action": {
+        "kind": "tool",
+        "name": "download",
+        "arguments": {}
+      }
+    }
+  },
+  {
+    "contract": "WorkerAction",
+    "label": "known tool rejects extra arguments",
+    "valid": false,
+    "payload": {
+      "action": {
+        "kind": "tool",
+        "name": "list_tables",
+        "arguments": {
+          "query": "select"
+        }
+      }
+    }
+  },
+  {
+    "contract": "ToolResult",
+    "label": "invalid structured content",
+    "valid": false,
+    "payload": {
+      "status": "ok",
+      "name": "execute_readonly_sql",
+      "data": {
+        "query_id": "q_1",
+        "columns": [
+          {
+            "name": "order_count",
+            "type": "integer"
+          }
+        ],
+        "rows": [
+          {
+            "order_count": 4
+          }
+        ],
+        "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    }
+  },
+  {
+    "contract": "TraceEvent",
+    "label": "mismatched event payload",
+    "valid": false,
+    "payload": {
+      "kind": "grade",
+      "run_id": "12345678-1234-4234-a234-123456789abc",
+      "seq": 3,
+      "elapsed_ms": 50,
+      "outcome_code": "ok",
+      "correlation_id": "tool_1",
+      "payload": {
+        "status": "ok",
+        "name": "execute_readonly_sql",
+        "data": {
+          "query_id": "q_1",
+          "columns": [
+            {
+              "name": "order_count",
+              "type": "integer"
+            }
+          ],
+          "rows": [[4]],
+          "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      }
+    }
+  },
+  {
+    "contract": "Proposal",
+    "label": "path-specific replacement type",
+    "valid": false,
+    "payload": {
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/workflow/verify_numeric_answers",
+          "value": "true"
+        }
+      ],
+      "expected_metric": "invalid_sql_rate",
+      "direction": "decrease",
+      "rationale": "Inspect the schema before constructing a query.",
+      "evidence_refs": [
+        {
+          "run_id": "12345678-1234-4234-a234-123456789abc",
+          "seq": 3
+        }
+      ]
+    }
+  },
+  {
+    "contract": "Proposal",
+    "label": "immutable path",
+    "valid": false,
+    "payload": {
+      "patch": [
+        {
+          "op": "replace",
+          "path": "/model_profile",
+          "value": "another-model"
+        }
+      ],
+      "expected_metric": "invalid_sql_rate",
+      "direction": "decrease",
+      "rationale": "Inspect the schema before constructing a query.",
+      "evidence_refs": [
+        {
+          "run_id": "12345678-1234-4234-a234-123456789abc",
+          "seq": 3
+        }
+      ]
+    }
+  },
+  {
+    "contract": "RunManifest",
+    "label": "digest must be canonical hex",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "run_id": "12345678-1234-4234-a234-123456789abc",
+      "mode": "fixture",
+      "stage": "diagnose",
+      "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+      "repeat": 1,
+      "task_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "config_hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "dataset_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "benchmark_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "software_revision": "fixture",
+      "evaluator_version": "v1",
+      "safety_profile": "readonly-synthetic-v1",
+      "worker": {
+        "snapshot": "fixture-v1",
+        "timeout_ms": 1000,
+        "reasoning_effort": null,
+        "temperature": null,
+        "top_p": null
+      },
+      "worker_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "price_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "schedule_seed": 20251106
+    }
+  },
+  {
+    "contract": "EvaluationReport",
+    "label": "rates are decimal strings",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "experiment_id": "12345678-1234-4234-a234-123456789abc",
+      "baseline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "candidate_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "scope": "dev_fixture",
+      "mode": "fixture",
+      "policy_version": "v1",
+      "manifest_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "roster_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "report_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "complete": true,
+      "winner": false,
+      "baseline": {
+        "scheduled": 6,
+        "attempted": 6,
+        "successes": 6,
+        "success_rate": 1,
+        "tool_calls": 12,
+        "tool_calls_per_success": "2",
+        "mean_calls_successful": "2",
+        "worker_cost_microusd": 0,
+        "worker_cost_per_success": "0",
+        "invalid_sql_attempts": 0,
+        "sql_attempts": 6,
+        "invalid_sql_rate": "0",
+        "recovered_faults": 0,
+        "scheduled_recoverable_faults": 0,
+        "recovery_rate": null,
+        "p50_ms": 130,
+        "p95_ms": 150,
+        "safety_violations": 0
+      },
+      "candidate": {
+        "scheduled": 6,
+        "attempted": 6,
+        "successes": 6,
+        "success_rate": "1",
+        "tool_calls": 12,
+        "tool_calls_per_success": "2",
+        "mean_calls_successful": "2",
+        "worker_cost_microusd": 0,
+        "worker_cost_per_success": "0",
+        "invalid_sql_attempts": 0,
+        "sql_attempts": 6,
+        "invalid_sql_rate": "0",
+        "recovered_faults": 0,
+        "scheduled_recoverable_faults": 0,
+        "recovery_rate": null,
+        "p50_ms": 130,
+        "p95_ms": 150,
+        "safety_violations": 0
+      },
+      "paired": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 6,
+        "success_delta": "0",
+        "cost_reduction": null
+      },
+      "categories": [],
+      "uncertainty": null,
+      "gates": [
+        {
+          "gate": "provenance",
+          "status": "failed",
+          "reason": "ineligible_fixture"
+        }
+      ]
+    }
+  },
+  {
+    "contract": "QueueReference",
+    "label": "positive delivery generation",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "work_id": "12345678-1234-4234-a234-123456789abc",
+      "generation": 0
+    }
+  },
+  {
+    "contract": "ExperimentSubmit",
+    "label": "preset cannot set spend",
+    "valid": false,
+    "payload": {
+      "scope": "demo_fixture",
+      "max_spend_microusd": 1
+    }
+  },
+  {
+    "contract": "DecisionRequest",
+    "label": "missing report digest",
+    "valid": false,
+    "payload": {
+      "candidate_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "expected_revision": 1,
+      "reason": "Checked."
+    }
+  },
+  {
+    "contract": "ExecuteTaskRequest",
+    "label": "UTC deadline only",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "task": {
+        "schema_version": 1,
+        "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+        "split": "dev",
+        "variant_id": "variant-a",
+        "category": "schema_discovery",
+        "prompt": "How many orders were paid?",
+        "output_keys": [
+          {
+            "key": "paid_orders",
+            "unit": "count",
+            "value_type": "integer"
+          }
+        ],
+        "allowed_clarification_fields": []
+      },
+      "harness": {
+        "schema_version": 1,
+        "model_profile": "dataops-fixed-v1",
+        "prompt": {
+          "task_guidance": "Investigate the request and cite the returned data."
+        },
+        "workflow": {
+          "schema_inspection": "on_error",
+          "verify_numeric_answers": false,
+          "retry_policy": "error_aware"
+        },
+        "context": {
+          "recent_tool_results": 4
+        },
+        "limits": {
+          "max_tool_calls": 12,
+          "max_retries_per_tool": 2,
+          "max_model_turns": 10,
+          "max_input_tokens": 12000,
+          "max_output_tokens": 3000
+        },
+        "output_contract": "dataops-answer-v1",
+        "tool_registry": "dataops-mcp-v1",
+        "safety_profile": "readonly-synthetic-v1"
+      },
+      "manifest": {
+        "schema_version": 1,
+        "run_id": "12345678-1234-4234-a234-123456789abc",
+        "mode": "fixture",
+        "stage": "diagnose",
+        "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+        "repeat": 1,
+        "task_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "config_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "dataset_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "benchmark_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "software_revision": "fixture",
+        "evaluator_version": "v1",
+        "safety_profile": "readonly-synthetic-v1",
+        "worker": {
+          "snapshot": "fixture-v1",
+          "timeout_ms": 1000,
+          "reasoning_effort": null,
+          "temperature": null,
+          "top_p": null
+        },
+        "worker_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "price_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "schedule_seed": 20251106
+      },
+      "fault": null,
+      "deadline": "2025-09-02T01:02:03+01:00"
+    }
+  },
+  {
+    "contract": "ExecuteTaskRequest",
+    "label": "invalid calendar date",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "task": {
+        "schema_version": 1,
+        "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+        "split": "dev",
+        "variant_id": "variant-a",
+        "category": "schema_discovery",
+        "prompt": "How many orders were paid?",
+        "output_keys": [
+          {
+            "key": "paid_orders",
+            "unit": "count",
+            "value_type": "integer"
+          }
+        ],
+        "allowed_clarification_fields": []
+      },
+      "harness": {
+        "schema_version": 1,
+        "model_profile": "dataops-fixed-v1",
+        "prompt": {
+          "task_guidance": "Investigate the request and cite the returned data."
+        },
+        "workflow": {
+          "schema_inspection": "on_error",
+          "verify_numeric_answers": false,
+          "retry_policy": "error_aware"
+        },
+        "context": {
+          "recent_tool_results": 4
+        },
+        "limits": {
+          "max_tool_calls": 12,
+          "max_retries_per_tool": 2,
+          "max_model_turns": 10,
+          "max_input_tokens": 12000,
+          "max_output_tokens": 3000
+        },
+        "output_contract": "dataops-answer-v1",
+        "tool_registry": "dataops-mcp-v1",
+        "safety_profile": "readonly-synthetic-v1"
+      },
+      "manifest": {
+        "schema_version": 1,
+        "run_id": "12345678-1234-4234-a234-123456789abc",
+        "mode": "fixture",
+        "stage": "diagnose",
+        "task_key": "synthetic-business-v1/dev/variant-a/schema_discovery/01",
+        "repeat": 1,
+        "task_input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "config_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "dataset_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "benchmark_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "software_revision": "fixture",
+        "evaluator_version": "v1",
+        "safety_profile": "readonly-synthetic-v1",
+        "worker": {
+          "snapshot": "fixture-v1",
+          "timeout_ms": 1000,
+          "reasoning_effort": null,
+          "temperature": null,
+          "top_p": null
+        },
+        "worker_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "price_profile_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "schedule_seed": 20251106
+      },
+      "fault": null,
+      "deadline": "2025-09-31T01:02:03Z"
+    }
+  },
+  {
+    "contract": "PageQuery",
+    "label": "paging value is not coerced",
+    "valid": false,
+    "payload": {
+      "limit": "5"
+    }
+  }
+]

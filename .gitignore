@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+**/node_modules/
+**/.next/
+**/next-env.d.ts
+**/dist/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+*.egg-info/
+*.tsbuildinfo
+test-results/
+playwright-report/
+coverage/
+.artifacts/

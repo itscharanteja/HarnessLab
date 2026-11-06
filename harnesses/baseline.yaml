@@ -1,0 +1,19 @@
+schema_version: 1
+model_profile: dataops-fixed-v1
+prompt:
+  task_guidance: "Investigate the request and cite the returned data."
+workflow:
+  schema_inspection: on_error
+  verify_numeric_answers: false
+  retry_policy: error_aware
+context:
+  recent_tool_results: 4
+limits:
+  max_tool_calls: 12
+  max_retries_per_tool: 2
+  max_model_turns: 10
+  max_input_tokens: 12000
+  max_output_tokens: 3000
+output_contract: dataops-answer-v1
+tool_registry: dataops-mcp-v1
+safety_profile: readonly-synthetic-v1

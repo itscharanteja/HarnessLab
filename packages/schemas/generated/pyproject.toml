@@ -1,0 +1,12 @@
+[project]
+name = "harnesslab-contracts"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "jsonschema[format-nongpl]==4.26.0",
+  "pydantic==2.14.3",
+]
+
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"

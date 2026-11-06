@@ -1,0 +1,17 @@
+[project]
+name = "harnesslab-runner"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi==0.162.0",
+  "uvicorn==0.54.0",
+  "harnesslab-contracts",
+  "openai-agents==0.24.0",
+  "mcp==1.30.0",
+  "rfc8785==0.1.4",
+  "ruamel.yaml==0.19.1",
+]
+
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
