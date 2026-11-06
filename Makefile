@@ -40,3 +40,10 @@ benchmark-seed:
 
 benchmark-verify:
 	uv run --locked python -m benchmarks.generators.cli verify
+
+.PHONY: config-check run-fixture
+config-check:
+	uv run --locked python -m harnesslab_runner.fixture config-check
+
+run-fixture:
+	@uv run --locked python -m harnesslab_runner.fixture run

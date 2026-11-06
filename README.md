@@ -55,3 +55,15 @@ make benchmark-generate MODE=release SPLIT=holdout SEED_FILE=/restricted/holdout
 ```
 
 Install prompt and fault bundles in the authorized execution scope. Install the matching oracle only in the evaluator's private storage. Keep all holdout artifacts and credentials in the separate operator environment. Review the release manifest and record its digest before installation.
+
+## Fixture Worker Graph
+
+After generating and seeding the fixture benchmark, validate the baseline and run one preset development task.
+
+```sh
+make config-check
+make run-fixture
+uv run --locked pytest -q tests/unit/test_harness.py tests/integration/test_mcp.py tests/security/test_sql_policy.py tests/regression/test_worker_graph.py
+```
+
+The fixture uses scripted model turns, a real MCP stdio session and a variant-scoped PostgreSQL login. `make run-fixture` prints a v1 run envelope with the answer, evidence and trace digest. The runner starts the MCP subprocess with the selected sandbox credential and the public metric catalog. Build the runner with `make infra-up` before the image integration test.

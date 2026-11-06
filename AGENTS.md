@@ -6,7 +6,7 @@ Read this file and [PLAN.md](PLAN.md) before editing. This file governs how to w
 
 Build a DataOps investigation agent that answers business questions against synthetic PostgreSQL, cites the data behind its answers and asks a focused clarification when a request is underspecified. HarnessLab learns from development traces, proposes bounded YAML changes and measures those changes against the same worker model. A validated, approved version becomes the next baseline.
 
-Ship the 120-task benchmark, real DataOps MCP tools, deterministic evaluator, trace-derived optimizer, gated promotion and rollback, and an inspectable dashboard. Keep executable self-modification, external data connectors, model training and additional optimizer frameworks outside the MVP. Keep proposals, failed comparisons and inconclusive results visible to authorized reviewers.
+Ship the 120-task benchmark, real DataOps MCP tools, deterministic evaluator, trace-derived optimizer, gated promotion and rollback, and an inspectable dashboard. Use LangGraph as the Python orchestration runtime for the Worker Graph and Optimizer Graph. Keep executable self-modification, external data connectors, model training and additional orchestration frameworks outside the MVP. Keep proposals, failed comparisons and inconclusive results visible to authorized reviewers.
 
 ## Working protocol
 
@@ -16,6 +16,13 @@ Ship the 120-task benchmark, real DataOps MCP tools, deterministic evaluator, tr
 4. Run the phase's validation commands from the root. Record actual outcomes and any missing credentials in the phase evidence log. Check off a phase only when its acceptance criteria hold. Leave a reproducible command and the failing condition for anything outstanding.
 5. Use fixture mode for local development and CI. Use live inference only for explicitly requested, budgeted experiments. Treat deployment, hosted migrations, holdout evaluation, release activation and rollback as operator actions. Implement and exercise the same paths in an isolated local/test environment.
 6. Report changed files, commands run, remaining limitations and any unchecked work. Keep benchmark and live model results separate from fixture results.
+
+## LangGraph integration and migration
+
+- Continue from the verified Phase 0 foundation and Phase 1 fixture corpus. Reuse the pinned workspaces, service shells, shared v1 schemas, Compose services and role bootstrap, benchmark generators and artifacts, and fixture checks. The private release bundles remain operator work. See the repository audit and acceptance checks in [PLAN.md](PLAN.md#langgraph-integration-and-migration).
+- Add internal versioned state and the Worker Graph in Phase 2 inside `harnesslab_runner`. Reuse the generated task, action, tool, answer and envelope contracts. Use the OpenAI Agents SDK only behind the stateless model-turn adapter. Keep MCP dispatch, fault handling, evidence and hard budgets under trusted application code.
+- Establish the persistence, lease and trace contracts in Phase 3. Add the Optimizer Graph in Phase 4 inside `harnesslab_opt` on top of deterministic evaluation and the dispatcher’s experiment services. Enable durable checkpoints and record graph execution traces under the existing work identity and fence. Python accesses checkpoints through the dispatcher's private, scoped interface. The dispatcher owns scheduling, spend and durable commits. The operator API owns review and activation.
+- Pin and test LangGraph and its checkpoint dependencies in `uv.lock` when introduced. Keep state serialization versioned and bounded. Disable external tracing and fail closed on ambiguous paid effects. Verify fixture branch parity, restart/redelivery, old-envelope replay, and checkpoint and trace access before enabling durable execution. Keep any temporary compatibility adapter until the graph passes the existing entry-point regressions. Expose only redacted graph execution data through the API and dashboard in Phases 6 and 7.
 
 ## Monorepo and ownership
 
@@ -75,7 +82,7 @@ harnesslab/
 └── docs/                              # operations, evidence log and demo script
 ```
 
-- Use Node 22, TypeScript in strict mode, pnpm workspaces, Next.js App Router, Mantine, Fastify, BullMQ and the PostgreSQL `pg` driver. Use Python 3.12, uv, Pydantic, psycopg, the Python MCP SDK, pglast and the OpenAI Agents SDK. Use FastAPI for the private Python HTTP boundary. Use PostgreSQL 16 for local benchmark semantics and Redis 7 for BullMQ. Pin tested package versions and hosted compatibility in Phase 0.
+- Use Node 22, TypeScript in strict mode, pnpm workspaces, Next.js App Router, Mantine, Fastify, BullMQ and the PostgreSQL `pg` driver. Use Python 3.12, uv, Pydantic, psycopg, the Python MCP SDK, pglast, LangGraph and the OpenAI Agents SDK model adapter. Use FastAPI for the private Python HTTP boundary. Use PostgreSQL 16 for local benchmark semantics and Redis 7 for BullMQ. Preserve the Phase 0 pins and verify compatibility when adding graph dependencies.
 - Store orchestration, outcomes, redacted traces and the active pointer in control PostgreSQL. Use Supabase PostgreSQL and Auth for the hosted control plane. Use a separate PostgreSQL sandbox and credentials for synthetic data. Use Redis for delivery and backpressure. Keep evaluator bundles in private artifact storage in hosted environments.
 - The web app uses the Fastify API through a same-origin proxy. It has no DB or provider credentials. Fastify owns user auth, command validation and the operator review boundary. The dispatcher owns stage transitions, scheduling and durable result commits. Python implements execution, scoring and proposal generation. No Python BullMQ client.
 - Keep one schema source for each cross-language payload. Generate TypeScript and Python types and validate payloads at every trust boundary. Reject unknown fields and validate again before persistence. Use parameterized SQL for control-plane queries, typed tagged results and UTC times. Represent decimal business values and money as decimal strings on the wire, with integer micros for metering in storage.
@@ -98,6 +105,8 @@ harnesslab/
 - Allow only fixed model-provider destinations and required service connections from trusted processes. Models have no network, filesystem, shell, hosted tools or secret access. The MCP subprocess communicates via stdio and connects only to its selected sandbox.
 - Use an allowlisted PostgreSQL AST, read-only transaction, variant-scoped role and strict time/row/byte limits together. Preserve hard limits even when a YAML knob changes. Treat a policy-violating attempt as a safety event even if it is blocked. Keep query logs, evidence and tool responses within synthetic data and byte caps.
 - Keep migration, seed, evaluation and runtime roles distinct. Keep validation oracle files out of application images and all holdout artifacts out of the online environment. Keep reference values, holdout task identifiers, provider credentials and internal error details out of public views and logs.
+- Keep graph checkpoints private and separate from the redacted audit trace. Bind checkpoint access to the authenticated service, its assigned work and the current lease fence. The runner and optimizer have no control DB credentials. Keep graph state, node routing and checkpoint settings outside the mutable YAML paths.
+- Count typed tool requests and correlate untyped, blocked or redaction-required tool attempts by their `call_N` policy event when no `tool_request` can be recorded. Keep usage in the run envelope and exclude token counts, request IDs, run IDs and elapsed time from the deterministic trace digest.
 
 ## Harness configuration
 
@@ -147,6 +156,7 @@ Implement and keep the root commands documented in PLAN.md. Start with `make boo
 
 ## Implementation references
 
+- [LangGraph Python graph API](https://docs.langchain.com/oss/python/langgraph/graph-api) and [checkpoint persistence](https://docs.langchain.com/oss/python/langgraph/persistence)
 - [OpenAI Agents SDK quickstart](https://developers.openai.com/api/docs/guides/agents/quickstart?lang=python), [model configuration](https://developers.openai.com/api/docs/guides/agents/models) and [structured output schema requirements](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [MCP stdio transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) and [PostgreSQL read-only transactions](https://www.postgresql.org/docs/16/sql-set-transaction.html)
 - [BullMQ job IDs](https://docs.bullmq.io/guide/jobs/job-ids) and [Cloud Run instance-based billing](https://docs.cloud.google.com/run/docs/configuring/billing-settings)

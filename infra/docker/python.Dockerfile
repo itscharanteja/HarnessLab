@@ -10,6 +10,7 @@ COPY services/agent-runner/pyproject.toml services/agent-runner/
 COPY services/dataops-mcp/pyproject.toml services/dataops-mcp/
 COPY services/evaluator/pyproject.toml services/evaluator/
 COPY services/optimizer/pyproject.toml services/optimizer/
+COPY services/dataops-mcp/src/harnesslab_mcp/ services/dataops-mcp/src/harnesslab_mcp/
 COPY services/${SERVICE_PATH}/src/ services/${SERVICE_PATH}/src/
 RUN uv sync --locked --no-dev --no-editable --package "$SERVICE_PACKAGE"
 
@@ -17,3 +18,7 @@ FROM python:3.12-slim-bookworm@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf22
 COPY --from=build /workspace/.venv /workspace/.venv
 ENV PATH=/workspace/.venv/bin:$PATH PYTHONUNBUFFERED=1
 USER 65534:65534
+
+FROM runtime AS runner
+COPY datasets/synthetic-business/metrics.json /workspace/metric-catalog.json
+ENV HL_METRIC_CATALOG=/workspace/metric-catalog.json

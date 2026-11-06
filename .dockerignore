@@ -35,3 +35,6 @@
 !infra/
 !infra/docker/
 !infra/docker/*.Dockerfile
+!datasets/
+!datasets/synthetic-business/
+!datasets/synthetic-business/metrics.json

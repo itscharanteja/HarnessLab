@@ -182,6 +182,7 @@ services:
     build:
       context: ../..
       dockerfile: infra/docker/python.Dockerfile
+      target: runner
       args:
         SERVICE_PATH: agent-runner
         SERVICE_PACKAGE: harnesslab-runner
@@ -196,6 +197,7 @@ services:
     build:
       context: ../..
       dockerfile: infra/docker/python.Dockerfile
+      target: runtime
       args:
         SERVICE_PATH: evaluator
         SERVICE_PACKAGE: harnesslab-eval
@@ -208,6 +210,7 @@ services:
     build:
       context: ../..
       dockerfile: infra/docker/python.Dockerfile
+      target: runtime
       args:
         SERVICE_PATH: optimizer
         SERVICE_PACKAGE: harnesslab-opt

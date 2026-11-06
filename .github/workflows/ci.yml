@@ -25,6 +25,7 @@ jobs:
       - run: make contracts-check lint typecheck
       - run: corepack pnpm test
       - run: make benchmark-generate benchmark-seed benchmark-verify MODE=fixture
+      - run: make config-check run-fixture
       - run: uv run --locked pytest -q
       - run: corepack pnpm build
       - run: corepack pnpm exec playwright install --with-deps chromium
