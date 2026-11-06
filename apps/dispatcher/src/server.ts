@@ -41,6 +41,11 @@ const services = {
     "/internal/v1/execute-task",
     process.env.HL_RUNNER_TOKEN,
   ),
+  optimizer: endpoint(
+    process.env.OPTIMIZER_URL,
+    "/internal/v1/propose",
+    process.env.HL_OPTIMIZER_TOKEN,
+  ),
   evaluator: endpoint(
     process.env.EVALUATOR_URL,
     "/internal/v1/grade-task",

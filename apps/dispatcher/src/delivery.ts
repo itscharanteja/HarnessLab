@@ -21,6 +21,8 @@ import {
   type Lease,
 } from "./work.ts";
 
+import { propose } from "./propose.ts";
+
 export const QUEUE_NAME = "harnesslab-work-v1";
 
 export function jobId(ref: QueueReference) {
@@ -101,7 +103,7 @@ export function endpoint(
   return { url, token };
 }
 
-async function postJson(
+export async function postJson(
   service: Endpoint,
   body: unknown,
   signal: AbortSignal,
@@ -154,6 +156,7 @@ export type Services = {
   prompts: string;
   runner: Endpoint;
   evaluator: Endpoint;
+  optimizer?: Endpoint;
   allowLive: boolean;
 };
 
@@ -179,6 +182,10 @@ export async function deliver(
       });
   }, 3000);
   try {
+    if (item.kind === "analyze_and_propose") {
+      await propose(pool, item, services, controller.signal);
+      return;
+    }
     if (item.kind !== "execute_task" || !item.run_id)
       throw new DispatchError("work_kind_unavailable");
     const run = await readRun(pool, item.run_id);
@@ -187,17 +194,24 @@ export async function deliver(
       if (run.manifest.mode === "live" && !services.allowLive)
         throw new DispatchError("live_disabled");
       const input = await loadPinnedTask(services.prompts, run.manifest);
+      if (!(await reserveAndMark(pool, item, run))) return;
+      const {
+        rows: [lease],
+      } = await pool.query<{ worker_deadline: Date }>(
+        "SELECT worker_deadline FROM hl.work_items WHERE id=$1 AND fence=$2 AND state='running'",
+        [item.id, item.fence],
+      );
+      if (!lease?.worker_deadline) throw new DispatchError("stale_lease");
       const request: ExecuteTaskRequest = {
         schema_version: 1,
         task: input.task,
         fault: input.fault,
         harness: run.config,
         manifest: run.manifest,
-        deadline: new Date(Date.now() + 90000).toISOString(),
+        deadline: lease.worker_deadline.toISOString(),
       };
       if (!accepts("ExecuteTaskRequest", request))
         throw new DispatchError("invalid_worker_request");
-      if (!(await reserveAndMark(pool, item, run))) return;
       const output = await postJson(
         services.runner,
         request,

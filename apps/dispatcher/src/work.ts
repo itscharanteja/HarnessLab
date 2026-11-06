@@ -4,6 +4,8 @@ import {
   type ControlPool,
 } from "@harnesslab/control-db";
 import type {
+  DevDiagnosis,
+  OptimizeResponse,
   ExecuteTaskResponse,
   Grade,
   GradeTaskResponse,
@@ -19,9 +21,14 @@ import {
   replayTraceDigest,
   runMetrics,
   unknownUsage,
-  type Price,
 } from "./accounting.ts";
 import { digest, DispatchError } from "./artifacts.ts";
+import {
+  advanceTrial,
+  closeTrial,
+  persistProposals,
+  type TrialExperiment,
+} from "./trials.ts";
 
 const LEASE_MS = 15000;
 type WorkKind = "execute_task" | "analyze_and_propose" | "compare_and_advance";
@@ -44,13 +51,7 @@ type RunRow = {
   envelope: RunEnvelope | null;
   config: HarnessConfig;
 };
-type ExperimentRow = {
-  mode: "fixture" | "live";
-  status: string;
-  stage: string;
-  budget_exhausted: boolean;
-  manifest: { expected_runs: number; price: Price };
-};
+type ExperimentRow = TrialExperiment;
 export type Lease = Pick<
   WorkRow,
   "id" | "fence" | "lease_token" | "graph_version"
@@ -202,7 +203,8 @@ export async function reserveAndMark(
     }
     await db.query(
       `UPDATE hl.work_items SET reservation_micros=COALESCE(reservation_micros,$2),
-           effect_started=$3 WHERE id=$1`,
+           effect_started=$3,worker_deadline=COALESCE(worker_deadline,clock_timestamp()+interval '90 seconds')
+           WHERE id=$1`,
       [item.id, limit.toString(), exp.mode === "live"],
     );
     return true;
@@ -288,6 +290,7 @@ async function appendTrace(db: ControlClient, run: RunEnvelope, grade: Grade) {
 }
 
 async function advance(db: ControlClient, item: WorkRow, exp: ExperimentRow) {
+  if (exp.manifest.trial) return advanceTrial(db, item.experiment_id, exp);
   const {
     rows: [counts],
   } = await db.query<{ total: number; pending: number; infra: number }>(
@@ -390,6 +393,12 @@ async function terminal(
         [item.run_id, grade],
       );
   }
+  if (item.kind === "analyze_and_propose") {
+    await db.query(
+      "INSERT INTO hl.optimizer_usage(work_id,usage,cost_micros) VALUES($1,NULL,$2)",
+      [item.id, cost.toString()],
+    );
+  }
   await db.query(
     `UPDATE hl.experiments SET reserved_micros=reserved_micros-$2,spent_micros=spent_micros+$3,
        budget_exhausted=budget_exhausted OR (spent_micros+$3::bigint>max_spend_micros)
@@ -479,5 +488,131 @@ export async function reclaim(pool: ControlPool) {
          ORDER BY lease_until LIMIT 1 FOR UPDATE SKIP LOCKED`,
     );
     if (item) await failOrRetry(db, item, "lease_expired");
+  });
+}
+
+export async function reserveOptimizer(pool: ControlPool, lease: Lease) {
+  return transaction(pool, async (db) => {
+    const item = await lockActive(db, lease);
+    const exp = await experiment(db, item);
+    const trial = exp.manifest.trial;
+    if (
+      !trial ||
+      item.kind !== "analyze_and_propose" ||
+      exp.stage !== "propose" ||
+      item.input_digest !==
+        digest({ id: item.experiment_id, stage: "propose", trial })
+    )
+      throw new DispatchError("invalid_proposal_work");
+    if (exp.status === "cancelled" || exp.budget_exhausted) {
+      await terminal(
+        db,
+        item,
+        exp,
+        null,
+        null,
+        exp.status === "cancelled" ? "cancelled" : "experiment_budget",
+      );
+      return false;
+    }
+    if (item.effect_started) throw new DispatchError("ambiguous_live_effect");
+    const limit =
+      exp.mode === "fixture"
+        ? 0n
+        : charge(trial.optimizer_price, 12000n, 1500n);
+    if (item.reservation_micros === null) {
+      const reserved = await db.query(
+        `UPDATE hl.experiments SET reserved_micros=reserved_micros+$2
+        WHERE id=$1 AND spent_micros+reserved_micros+$2::bigint<=max_spend_micros`,
+        [item.experiment_id, limit.toString()],
+      );
+      if (!reserved.rowCount) {
+        await db.query(
+          "UPDATE hl.experiments SET budget_exhausted=true WHERE id=$1",
+          [item.experiment_id],
+        );
+        await terminal(db, item, exp, null, null, "experiment_budget");
+        return false;
+      }
+    }
+    await db.query(
+      "UPDATE hl.work_items SET reservation_micros=COALESCE(reservation_micros,$2),effect_started=$3 WHERE id=$1",
+      [item.id, limit.toString(), exp.mode === "live"],
+    );
+    return true;
+  });
+}
+
+export async function finishProposal(
+  pool: ControlPool,
+  lease: Lease,
+  diagnosis: DevDiagnosis,
+  result: OptimizeResponse,
+) {
+  if (
+    !accepts("OptimizeResponse", result) ||
+    !accepts("DevDiagnosis", diagnosis) ||
+    !safePayload(result) ||
+    result.graph.graph_kind !== "optimizer" ||
+    result.graph.graph_version !== lease.graph_version ||
+    result.graph.events.some(
+      (event, index) =>
+        event.seq !== index ||
+        event.evidence_seq !== null ||
+        (index > 0 &&
+          event.elapsed_ms < result.graph.events[index - 1]!.elapsed_ms),
+    ) ||
+    result.dispositions.some((entry, index) => entry.ordinal !== index) ||
+    result.usage.input_tokens > 12000 ||
+    result.usage.output_tokens > 1500
+  )
+    throw new DispatchError("invalid_optimizer_result");
+  return transaction(pool, async (db) => {
+    const item = await lockActive(db, lease);
+    const exp = await experiment(db, item);
+    if (
+      item.kind !== "analyze_and_propose" ||
+      !exp.manifest.trial ||
+      exp.stage !== "propose" ||
+      item.reservation_micros === null ||
+      (exp.mode === "fixture" &&
+        (result.dispositions.length > 2 ||
+          result.usage.input_tokens ||
+          result.usage.output_tokens)) ||
+      (exp.mode === "live" &&
+        (!item.effect_started ||
+          !result.usage.input_tokens ||
+          !result.usage.output_tokens))
+    )
+      throw new DispatchError("invalid_proposal_work");
+    const cost =
+      exp.mode === "fixture"
+        ? 0n
+        : charge(
+            exp.manifest.trial.optimizer_price,
+            BigInt(result.usage.input_tokens),
+            BigInt(result.usage.output_tokens),
+          );
+    await db.query(
+      "INSERT INTO hl.optimizer_usage(work_id,usage,cost_micros) VALUES($1,$2,$3)",
+      [item.id, result.usage, cost.toString()],
+    );
+    await db.query(
+      "INSERT INTO hl.graph_projections(work_id,projection) VALUES($1,$2)",
+      [item.id, result.graph],
+    );
+    await db.query(
+      `UPDATE hl.experiments SET spent_micros=spent_micros+$2,reserved_micros=reserved_micros-$3
+      WHERE id=$1`,
+      [item.experiment_id, cost.toString(), item.reservation_micros],
+    );
+    await db.query(
+      `UPDATE hl.work_items SET state='done',lease_token=NULL,lease_until=NULL,reservation_micros=NULL
+      WHERE id=$1`,
+      [item.id],
+    );
+    if (exp.status === "cancelled")
+      return closeTrial(db, item.experiment_id, exp, "cancelled");
+    await persistProposals(db, item.experiment_id, exp, diagnosis, result);
   });
 }

@@ -261,7 +261,16 @@
     "GraphProjection": { "$ref": "#/$defs/GraphProjection" },
     "ExecuteTaskResponse": { "$ref": "#/$defs/ExecuteTaskResponse" },
     "CheckpointRequest": { "$ref": "#/$defs/CheckpointRequest" },
-    "CheckpointResponse": { "$ref": "#/$defs/CheckpointResponse" }
+    "CheckpointResponse": { "$ref": "#/$defs/CheckpointResponse" },
+    "DiagnosisEvent": { "$ref": "#/$defs/DiagnosisEvent" },
+    "DiagnosisRun": { "$ref": "#/$defs/DiagnosisRun" },
+    "AnalyzeDevRequest": { "$ref": "#/$defs/AnalyzeDevRequest" },
+    "FailureCluster": { "$ref": "#/$defs/FailureCluster" },
+    "DevDiagnosis": { "$ref": "#/$defs/DevDiagnosis" },
+    "MutableHarness": { "$ref": "#/$defs/MutableHarness" },
+    "OptimizeRequest": { "$ref": "#/$defs/OptimizeRequest" },
+    "ProposalDisposition": { "$ref": "#/$defs/ProposalDisposition" },
+    "OptimizeResponse": { "$ref": "#/$defs/OptimizeResponse" }
   },
   "required": [
     "Digest",
@@ -352,7 +361,16 @@
     "GraphProjection",
     "ExecuteTaskResponse",
     "CheckpointRequest",
-    "CheckpointResponse"
+    "CheckpointResponse",
+    "DiagnosisEvent",
+    "DiagnosisRun",
+    "AnalyzeDevRequest",
+    "FailureCluster",
+    "DevDiagnosis",
+    "MutableHarness",
+    "OptimizeRequest",
+    "ProposalDisposition",
+    "OptimizeResponse"
   ],
   "$defs": {
     "Digest": {
@@ -3400,6 +3418,391 @@
         }
       },
       "required": ["schema_version", "thread_id", "input_digest", "state"]
+    },
+    "DiagnosisEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "tool_request",
+            "tool_result",
+            "policy_decision",
+            "fault",
+            "recovery"
+          ]
+        },
+        "code": {
+          "$ref": "#/$defs/OutcomeCode"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToolName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["seq", "kind", "code", "tool"]
+    },
+    "DiagnosisRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "task_key": {
+          "$ref": "#/$defs/TaskKey"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "cost_micros": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OutcomeCode"
+          },
+          "minItems": 0,
+          "maxItems": 60
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DiagnosisEvent"
+          },
+          "minItems": 0,
+          "maxItems": 150
+        }
+      },
+      "required": [
+        "run_id",
+        "task_key",
+        "success",
+        "tool_calls",
+        "cost_micros",
+        "reasons",
+        "events"
+      ]
+    },
+    "AnalyzeDevRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "runs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DiagnosisRun"
+          },
+          "minItems": 1,
+          "maxItems": 30
+        }
+      },
+      "required": ["schema_version", "runs"]
+    },
+    "FailureCluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "signature": {
+          "type": "string",
+          "enum": [
+            "schema_before_discovery",
+            "blocked_repeat",
+            "unrecovered_fault",
+            "evidence_gap",
+            "excess_efficiency_calls"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 30
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EventRef"
+          },
+          "minItems": 2,
+          "maxItems": 3
+        }
+      },
+      "required": ["signature", "count", "evidence_refs"]
+    },
+    "DevDiagnosis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FailureCluster"
+          },
+          "minItems": 0,
+          "maxItems": 5
+        },
+        "counterexamples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EventRef"
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scheduled": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            },
+            "successes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "tool_calls": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 360
+            },
+            "cost_micros": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "invalid_sql": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "sql_calls": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "faults": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "recoveries": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            }
+          },
+          "required": [
+            "scheduled",
+            "successes",
+            "tool_calls",
+            "cost_micros",
+            "invalid_sql",
+            "sql_calls",
+            "faults",
+            "recoveries"
+          ]
+        }
+      },
+      "required": ["schema_version", "clusters", "counterexamples", "metrics"]
+    },
+    "MutableHarness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prompt": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "task_guidance": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 600,
+              "pattern": "\\S"
+            }
+          },
+          "required": ["task_guidance"]
+        },
+        "workflow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "schema_inspection": {
+              "type": "string",
+              "enum": ["on_error", "before_first_sql"]
+            },
+            "verify_numeric_answers": {
+              "type": "boolean"
+            },
+            "retry_policy": {
+              "type": "string",
+              "enum": ["none", "error_aware"]
+            }
+          },
+          "required": [
+            "schema_inspection",
+            "verify_numeric_answers",
+            "retry_policy"
+          ]
+        },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "recent_tool_results": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 8
+            }
+          },
+          "required": ["recent_tool_results"]
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_tool_calls": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 12
+            },
+            "max_retries_per_tool": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            }
+          },
+          "required": ["max_tool_calls", "max_retries_per_tool"]
+        }
+      },
+      "required": ["prompt", "workflow", "context", "limits"]
+    },
+    "OptimizeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "mode": {
+          "$ref": "#/$defs/Mode"
+        },
+        "parent": {
+          "$ref": "#/$defs/MutableHarness"
+        },
+        "diagnosis": {
+          "$ref": "#/$defs/DevDiagnosis"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelSettings"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["schema_version", "mode", "parent", "diagnosis", "model"]
+    },
+    "ProposalDisposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "proposal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Proposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutcomeCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_view_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["ordinal", "proposal", "reason", "candidate_view_digest"]
+    },
+    "OptimizeResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "dispositions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProposalDisposition"
+          },
+          "minItems": 0,
+          "maxItems": 3
+        },
+        "graph": {
+          "$ref": "#/$defs/GraphProjection"
+        },
+        "usage": {
+          "$ref": "#/$defs/ModelUsage"
+        }
+      },
+      "required": ["schema_version", "dispositions", "graph", "usage"]
     }
   }
 }

@@ -69,3 +69,7 @@ test-security:
 .PHONY: dispatch-fixture
 dispatch-fixture:
 	$(COMPOSE) exec -T dispatcher node apps/dispatcher/src/cli.ts
+
+.PHONY: optimize-fixture
+optimize-fixture:
+	$(COMPOSE) exec -T dispatcher node apps/dispatcher/src/cli.ts --trial

@@ -103,10 +103,12 @@ def work_case(control_dsn, benchmark_request):
     from harnesslab_contracts.replay import digest
     from psycopg.types.json import Jsonb
 
-    def create(mode="fixture", expected=1, cap=50000):
-        request = benchmark_request()
+    def create(mode="fixture", expected=1, cap=50000, category="efficiency"):
+        request = benchmark_request(category)
         manifest = {**request["manifest"], "mode": mode, "evaluator_version": "phase3-eval-v1"}
         task = request["task"]
+        if category != "efficiency":
+            manifest["software_revision"] = "phase4-trial"
         price = (
             {"input": "1000000", "output": "1000000"}
             if mode == "live"

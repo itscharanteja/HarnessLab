@@ -84,3 +84,18 @@ make test-security
 `make dispatch-fixture` submits one preset development task and prints the experiment ID. The dispatcher relays its reference through BullMQ, saves the worker envelope, calls the evaluator, and commits the grade and trace to control PostgreSQL. A grading retry reads the saved envelope. Use the local fixture database roles for these commands.
 
 The dispatcher receives only prompts and benchmark manifests. The evaluator receives manifests and oracles. The runner receives variant-scoped runtime maps. Compose mounts these three directories separately and supplies distinct private bearer identities. The fixture packaging command copies neither holdout data nor sandbox seed credentials.
+
+## Fixture optimization trial
+
+After rebuilding the fixture services and applying the control migrations, start the bounded six-task trial.
+
+```sh
+make db-migrate phase3-artifacts
+make optimize-fixture
+uv run --locked pytest -q tests/regression/test_optimizer.py tests/integration/test_experiment.py
+uv run --locked pytest -q tests/integration/test_graph_persistence.py
+```
+
+The command prints an experiment ID and its stored development report. The dispatcher records the diagnosis, proposal decisions, matched screening roster, grades, and optimizer usage. Screening reuses the diagnosis baseline cells. Fixture reports are ineligible for activation.
+
+Both graphs use the dispatcher's lease-scoped checkpoint interface. The optimizer resumes from validated suggestions. A worker can replay a completed envelope after a lost response. A worker interrupted before its MCP evidence ledger is complete uses the existing bounded fixture retry with the original deadline. The development corpus is shared across fixture and live worker modes. Live validation requires a separate operator-approved release bundle.

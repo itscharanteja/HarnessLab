@@ -182,3 +182,19 @@ def test_mismatched_lineage_is_rejected(benchmark_request):
     run["trace_digest"] = trace_digest(run["events"])
     with pytest.raises(ValueError, match="lineage"):
         grade_run(run, oracle)
+
+
+def test_live_development_uses_pinned_corpus_and_live_validation_requires_release(
+    benchmark_request,
+):
+    from harnesslab_contracts.internal import InternalError
+
+    dev = benchmark_request()["manifest"] | {"mode": "live", "evaluator_version": "phase3-eval-v1"}
+    assert reference_for({"manifest": dev}, ARTIFACTS)["input_hash"] == dev["task_input_hash"]
+    validation = benchmark_request(split="validation")["manifest"] | {
+        "mode": "live",
+        "evaluator_version": "phase3-eval-v1",
+    }
+    with pytest.raises(InternalError) as error:
+        reference_for({"manifest": validation}, ARTIFACTS)
+    assert error.value.code == "invalid_provenance"

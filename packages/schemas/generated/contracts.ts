@@ -296,6 +296,15 @@ export interface ContractCatalog {
   ExecuteTaskResponse: ExecuteTaskResponse;
   CheckpointRequest: CheckpointRequest;
   CheckpointResponse: CheckpointResponse;
+  DiagnosisEvent: DiagnosisEvent;
+  DiagnosisRun: DiagnosisRun;
+  AnalyzeDevRequest: AnalyzeDevRequest;
+  FailureCluster: FailureCluster;
+  DevDiagnosis: DevDiagnosis;
+  MutableHarness: MutableHarness;
+  OptimizeRequest: OptimizeRequest;
+  ProposalDisposition: ProposalDisposition;
+  OptimizeResponse: OptimizeResponse;
 }
 export interface EventRef {
   run_id: Uuid;
@@ -846,4 +855,108 @@ export interface CheckpointResponse {
   state: {
     [k: string]: unknown | undefined;
   } | null;
+}
+export interface DiagnosisEvent {
+  seq: number;
+  kind: "tool_request" | "tool_result" | "policy_decision" | "fault" | "recovery";
+  code: OutcomeCode;
+  tool: ToolName | null;
+}
+export interface DiagnosisRun {
+  run_id: Uuid;
+  task_key: TaskKey;
+  success: boolean;
+  tool_calls: number;
+  cost_micros: number;
+  /**
+   * @minItems 0
+   * @maxItems 60
+   */
+  reasons: OutcomeCode[];
+  /**
+   * @minItems 0
+   * @maxItems 150
+   */
+  events: DiagnosisEvent[];
+}
+export interface AnalyzeDevRequest {
+  schema_version: 1;
+  /**
+   * @minItems 1
+   * @maxItems 30
+   */
+  runs: DiagnosisRun[];
+}
+export interface FailureCluster {
+  signature:
+    "schema_before_discovery" | "blocked_repeat" | "unrecovered_fault" | "evidence_gap" | "excess_efficiency_calls";
+  count: number;
+  /**
+   * @minItems 2
+   * @maxItems 3
+   */
+  evidence_refs: EventRef[];
+}
+export interface DevDiagnosis {
+  schema_version: 1;
+  /**
+   * @minItems 0
+   * @maxItems 5
+   */
+  clusters: FailureCluster[];
+  /**
+   * @minItems 0
+   * @maxItems 3
+   */
+  counterexamples: EventRef[];
+  metrics: {
+    scheduled: number;
+    successes: number;
+    tool_calls: number;
+    cost_micros: number;
+    invalid_sql: number;
+    sql_calls: number;
+    faults: number;
+    recoveries: number;
+  };
+}
+export interface MutableHarness {
+  prompt: {
+    task_guidance: string;
+  };
+  workflow: {
+    schema_inspection: "on_error" | "before_first_sql";
+    verify_numeric_answers: boolean;
+    retry_policy: "none" | "error_aware";
+  };
+  context: {
+    recent_tool_results: number;
+  };
+  limits: {
+    max_tool_calls: number;
+    max_retries_per_tool: number;
+  };
+}
+export interface OptimizeRequest {
+  schema_version: 1;
+  mode: Mode;
+  parent: MutableHarness;
+  diagnosis: DevDiagnosis;
+  model: ModelSettings | null;
+}
+export interface ProposalDisposition {
+  ordinal: number;
+  proposal: Proposal | null;
+  reason: OutcomeCode | null;
+  candidate_view_digest: Digest | null;
+}
+export interface OptimizeResponse {
+  schema_version: 1;
+  /**
+   * @minItems 0
+   * @maxItems 3
+   */
+  dispositions: ProposalDisposition[];
+  graph: GraphProjection;
+  usage: ModelUsage;
 }

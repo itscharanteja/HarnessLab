@@ -158,6 +158,7 @@ services:
       HL_MODE: fixture
       HL_RUNNER_TOKEN: fixture-dispatcher-to-runner
       HL_EVALUATOR_TOKEN: fixture-dispatcher-to-evaluator
+      HL_OPTIMIZER_TOKEN: fixture-dispatcher-to-optimizer
       HL_WORKER_CHECKPOINT_TOKEN: fixture-worker-to-dispatcher
       HL_OPTIMIZER_CHECKPOINT_TOKEN: fixture-optimizer-to-dispatcher
       HL_DISPATCHER_ARTIFACT_DIR: /fixture
@@ -198,6 +199,8 @@ services:
     environment:
       HL_MODE: fixture
       HL_DISPATCHER_TOKEN: fixture-dispatcher-to-runner
+      HL_CHECKPOINT_URL: http://dispatcher:4001/internal/v1/checkpoint
+      HL_CHECKPOINT_TOKEN: fixture-worker-to-dispatcher
       HL_SANDBOX_DEV_RUNTIME_MAP_FILE: /fixture/dev.json
       HL_SANDBOX_VALIDATION_RUNTIME_MAP_FILE: /fixture/validation.json
     volumes:
@@ -235,6 +238,9 @@ services:
     command: ["uvicorn", "harnesslab_opt.http:app", "--host", "0.0.0.0"]
     environment:
       HL_MODE: fixture
+      HL_DISPATCHER_TOKEN: fixture-dispatcher-to-optimizer
+      HL_CHECKPOINT_URL: http://dispatcher:4001/internal/v1/checkpoint
+      HL_CHECKPOINT_TOKEN: fixture-optimizer-to-dispatcher
     healthcheck: *python-health
     networks: [private]
 

@@ -1372,6 +1372,146 @@ class CheckpointResponse(BaseModel):
     state: dict[str, Any] | None
 
 
+class Kind1(StrEnum):
+    tool_request = 'tool_request'
+    tool_result = 'tool_result'
+    policy_decision = 'policy_decision'
+    fault = 'fault'
+    recovery = 'recovery'
+
+
+class DiagnosisEvent(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    seq: Annotated[StrictInt, Field(ge=0, le=10000)]
+    kind: Kind1
+    code: OutcomeCode
+    tool: ToolName | None
+
+
+class DiagnosisRun(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    run_id: Uuid
+    task_key: TaskKey
+    success: StrictBool
+    tool_calls: Annotated[StrictInt, Field(ge=0, le=12)]
+    cost_micros: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    reasons: Annotated[list[OutcomeCode], Field(max_length=60, min_length=0)]
+    events: Annotated[list[DiagnosisEvent], Field(max_length=150, min_length=0)]
+
+
+class AnalyzeDevRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    runs: Annotated[list[DiagnosisRun], Field(max_length=30, min_length=1)]
+
+
+class Signature(StrEnum):
+    schema_before_discovery = 'schema_before_discovery'
+    blocked_repeat = 'blocked_repeat'
+    unrecovered_fault = 'unrecovered_fault'
+    evidence_gap = 'evidence_gap'
+    excess_efficiency_calls = 'excess_efficiency_calls'
+
+
+class FailureCluster(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    signature: Signature
+    count: Annotated[StrictInt, Field(ge=2, le=30)]
+    evidence_refs: Annotated[list[EventRef], Field(max_length=3, min_length=2)]
+
+
+class Metrics(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    scheduled: Annotated[StrictInt, Field(ge=1, le=30)]
+    successes: Annotated[StrictInt, Field(ge=0, le=30)]
+    tool_calls: Annotated[StrictInt, Field(ge=0, le=360)]
+    cost_micros: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    invalid_sql: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    sql_calls: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    faults: Annotated[StrictInt, Field(ge=0, le=30)]
+    recoveries: Annotated[StrictInt, Field(ge=0, le=30)]
+
+
+class DevDiagnosis(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    clusters: Annotated[list[FailureCluster], Field(max_length=5, min_length=0)]
+    counterexamples: Annotated[list[EventRef], Field(max_length=3, min_length=0)]
+    metrics: Metrics
+
+
+class Workflow1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_inspection: SchemaInspection
+    verify_numeric_answers: StrictBool
+    retry_policy: RetryPolicy
+
+
+class Limits1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    max_tool_calls: Annotated[StrictInt, Field(ge=4, le=12)]
+    max_retries_per_tool: Annotated[StrictInt, Field(ge=0, le=2)]
+
+
+class MutableHarness(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    prompt: Prompt
+    workflow: Workflow1
+    context: Context
+    limits: Limits1
+
+
+class OptimizeRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    mode: Mode
+    parent: MutableHarness
+    diagnosis: DevDiagnosis
+    model: ModelSettings | None
+
+
+class ProposalDisposition(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    ordinal: Annotated[StrictInt, Field(ge=0, le=2)]
+    proposal: Proposal | None
+    reason: OutcomeCode | None
+    candidate_view_digest: Digest | None
+
+
+class OptimizeResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    dispositions: Annotated[
+        list[ProposalDisposition], Field(max_length=3, min_length=0)
+    ]
+    graph: GraphProjection
+    usage: ModelUsage
+
+
 class ContractCatalog(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1515,3 +1655,14 @@ class ContractCatalog(BaseModel):
     CheckpointResponse_1: Annotated[
         CheckpointResponse, Field(alias='CheckpointResponse')
     ]
+    DiagnosisEvent_1: Annotated[DiagnosisEvent, Field(alias='DiagnosisEvent')]
+    DiagnosisRun_1: Annotated[DiagnosisRun, Field(alias='DiagnosisRun')]
+    AnalyzeDevRequest_1: Annotated[AnalyzeDevRequest, Field(alias='AnalyzeDevRequest')]
+    FailureCluster_1: Annotated[FailureCluster, Field(alias='FailureCluster')]
+    DevDiagnosis_1: Annotated[DevDiagnosis, Field(alias='DevDiagnosis')]
+    MutableHarness_1: Annotated[MutableHarness, Field(alias='MutableHarness')]
+    OptimizeRequest_1: Annotated[OptimizeRequest, Field(alias='OptimizeRequest')]
+    ProposalDisposition_1: Annotated[
+        ProposalDisposition, Field(alias='ProposalDisposition')
+    ]
+    OptimizeResponse_1: Annotated[OptimizeResponse, Field(alias='OptimizeResponse')]

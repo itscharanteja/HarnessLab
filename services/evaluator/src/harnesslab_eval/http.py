@@ -4,6 +4,7 @@ from harnesslab_contracts.contracts import HealthResponse
 from harnesslab_contracts.internal import InternalError, internal_request
 from harnesslab_contracts.validate import accepts
 
+from .analysis import analyze_dev
 from .artifacts import reference_for
 from .grader import grade_run
 
@@ -29,3 +30,17 @@ async def grade_task(request: Request):
         return JSONResponse({"code": exc.code}, status_code=exc.status)
     except (ValueError, TypeError, ArithmeticError):
         return JSONResponse({"code": "invalid_envelope"}, status_code=422)
+
+
+@app.post("/internal/v1/analyze-dev")
+async def analyze(request: Request):
+    try:
+        payload = await internal_request(request, "AnalyzeDevRequest")
+        diagnosis = analyze_dev(payload["runs"])
+        if not accepts("DevDiagnosis", diagnosis):
+            raise ValueError("Invalid diagnosis")
+        return diagnosis
+    except InternalError as exc:
+        return JSONResponse({"code": exc.code}, status_code=exc.status)
+    except ValueError:
+        return JSONResponse({"code": "invalid_diagnosis"}, status_code=422)

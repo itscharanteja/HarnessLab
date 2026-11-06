@@ -64,3 +64,21 @@ Verified locally with the Phase 0 role bootstrap, PostgreSQL 16, Redis 7, and th
 The full fixture suite passed with 168 Python tests.
 
 Optimizer and comparison work kinds are reserved for Phases 4 and 5 respectively. Checkpoint storage and its private interface are in place. Phase 4 connects them to graph resumption. Live inference and hosted migrations were outside this fixture validation.
+
+## Phase 4 — Trace-derived optimization and paired trials
+
+The fixture diagnosed two recurring patterns across six stored baseline runs. Those patterns produced independent changes to schema inspection and transient-failure guidance. The baseline passed 2 of 6 tasks, and each candidate passed 4 of 6. Screening included 18 matched cells and reused all six diagnosis baseline runs. The stored report is `ineligible_fixture` and records zero spend.
+
+| Check                                                                                                                                           | Outcome                                                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `make db-migrate`                                                                                                                               | Exit 0. Applied both additive trial migrations to the existing fixture control database.                                                                                                                                                      |
+| `docker compose --file infra/docker/compose.yaml up --detach --no-deps --build --wait runner evaluator optimizer dispatcher`                    | Exit 0. All four rebuilt services reported healthy.                                                                                                                                                                                           |
+| `make optimize-fixture`                                                                                                                         | Exit 0. The report included both candidates, complete diagnosis and screening rosters, and no validation stage.                                                                                                                               |
+| `uv run --locked pytest -q tests/regression/test_optimizer.py tests/integration/test_experiment.py tests/integration/test_graph_persistence.py` | Exit 0, seven tests passed. Covered removal of source patterns, malformed proposal audit, reproducible matched results, optimizer resumption from a saved validation boundary, and lost worker response recovery through a replacement lease. |
+| `make lint contracts-check typecheck` and `corepack pnpm test`                                                                                  | Exit 0, 44 TypeScript tests passed. The scheduler tests verified the 30-task development diagnosis allocation and repeatable ordering within matched blocks.                                                                                  |
+
+The full fixture suite passed with 176 Python tests. It verified stale and cross-work checkpoint denials, artifact isolation and one-time settlement of a simulated ambiguous paid effect.
+
+Fixture worker recovery returned the exact saved envelope with its single injected fault and original evidence. An interrupted MCP session without a completed envelope uses the bounded fixture retry under the original deadline. The optimizer checkpoint contains validated dispositions. Its private input excludes validation prompts and oracle values.
+
+Paid execution and the full live validation roster were unexercised. A live run requires operator-approved model and price profiles, a spend cap, and the private validation release bundle. The Phase 1 private release artifact task remains open.

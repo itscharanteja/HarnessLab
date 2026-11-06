@@ -10,8 +10,8 @@ from psycopg.conninfo import conninfo_to_dict, make_conninfo
 from scripts.db_migrate import migrate
 
 
-def wait_for(db, experiment):
-    deadline = time.monotonic() + 30
+def wait_for(db, experiment, seconds=30):
+    deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         status = db.execute(
             "SELECT status FROM hl.experiments WHERE id=%s", (experiment,)
@@ -209,7 +209,7 @@ def test_phase0_roles_upgrade_in_disposable_database():
             migrate(migrator)
             migrate(migrator)
             with psycopg.connect(migrator) as db:
-                assert db.execute("SELECT count(*) FROM hl_migrations.applied").fetchone() == (1,)
+                assert db.execute("SELECT count(*) FROM hl_migrations.applied").fetchone() == (3,)
                 assert db.execute("SELECT count(*) FROM hl.harness_channels").fetchone() == (1,)
         finally:
             admin.execute(sql.SQL("DROP DATABASE {}").format(sql.Identifier(name)))

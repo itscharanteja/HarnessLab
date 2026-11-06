@@ -21,7 +21,7 @@ export const FIXTURE_WORKER = {
 } as const;
 export const FIXTURE_PRICE = { input: "0", output: "0" };
 
-function canonical(value: unknown): string {
+export function canonical(value: unknown): string {
   if (value === null || typeof value === "boolean" || typeof value === "string")
     return JSON.stringify(value);
   if (typeof value === "number" && Number.isSafeInteger(value))
@@ -94,7 +94,8 @@ export async function promptBundle(
     if (
       digest(snapshot) !== manifest_digest ||
       manifest.split !== split ||
-      manifest.fixture !== (mode === "fixture") ||
+      typeof manifest.fixture !== "boolean" ||
+      (split === "validation" && manifest.fixture !== (mode === "fixture")) ||
       digest(prompts) !== manifest.prompt_bundle_digest
     )
       throw new Error("Artifact provenance mismatch");

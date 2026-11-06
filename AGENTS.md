@@ -107,6 +107,7 @@ harnesslab/
 - Keep migration, seed, evaluation and runtime roles distinct. Keep validation oracle files out of application images and all holdout artifacts out of the online environment. Keep reference values, holdout task identifiers, provider credentials and internal error details out of public views and logs.
 - Keep graph checkpoints private and separate from the redacted audit trace. Bind checkpoint access to the authenticated service, its assigned work and the current lease fence. The runner and optimizer have no control DB credentials. Keep graph state, node routing and checkpoint settings outside the mutable YAML paths.
 - Preserve the v1 run envelope for replay. Carry the separately versioned graph projection in the private execute response. Authorize checkpoint operations with both the service identity and a capability tied to the current work lease.
+- Persist the matched stage roster before dispatch and reuse the pinned diagnosis baseline cells in screening. The optimizer sees only typed development summaries and the mutable harness view. Fixture recovery may replay a completed worker envelope or resume validated optimizer output. An unfinished MCP session uses a bounded retry under the original deadline.
 - Count typed tool requests and correlate untyped, blocked or redaction-required tool attempts by their `call_N` policy event when no `tool_request` can be recorded. Keep usage in the run envelope and exclude token counts, request IDs, run IDs and elapsed time from the deterministic trace digest.
 
 ## Harness configuration

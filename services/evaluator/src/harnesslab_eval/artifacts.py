@@ -33,7 +33,8 @@ def reference_for(run: dict, root: Path | None = None) -> dict:
             or digest({k: v for k, v in manifest.items() if k != "manifest_digest"})
             != manifest_digest
             or manifest["split"] != split
-            or manifest["fixture"] != (pinned["mode"] == "fixture")
+            or type(manifest["fixture"]) is not bool
+            or (split == "validation" and manifest["fixture"] != (pinned["mode"] == "fixture"))
             or digest(oracles) != manifest["reference_bundle_digest"]
             or dataset["rows_digest"] != pinned["dataset_digest"]
             or task["variant_id"] != variant
