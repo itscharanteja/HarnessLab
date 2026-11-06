@@ -47,3 +47,20 @@ Validated locally on 2026-11-06 with the pinned Node and Python toolchains, Lang
 | `make contracts-check`, `make lint`, `make typecheck`, and `corepack pnpm test` | Exit 0. Regenerated v1 contracts matched, and all 39 TypeScript tests passed.                                                                                                                                                                                                                                                                               |
 
 The single-turn OpenAI Agents SDK adapter was exercised against a mocked Responses transport. This evidence is fixture-only and required no provider credentials or paid requests. Private execution HTTP, grading and durable result commits are Phase 3 work. PostgreSQL checkpoint recovery remains scheduled for Phase 4.
+
+## Phase 3 — Deterministic grading, persistence and job delivery
+
+Verified locally with the Phase 0 role bootstrap, PostgreSQL 16, Redis 7, and the rebuilt private service containers. The fixture preset runs one development task and the simulated paid-effect tests exercise accounting without contacting a provider.
+
+| Check                                                                           | Outcome                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `make bootstrap`, `make infra-up`, `make db-migrate`                            | Exit 0. Locked installs and local builds succeeded. The additive migration applied to a disposable database initialized with Phase 0 grants. Reapplying preserved the single baseline and migration record.                                              |
+| `make phase3-artifacts`, `make dispatch-fixture`                                | Exit 0. The local worker delivered six open orders with SQL evidence and persisted a successful grade. The dispatcher stored the worker graph projection separately from the replay envelope.                                                            |
+| `make grader-replay`                                                            | Exit 0, six tests passed. A Phase 2 v1 envelope replayed deterministically, and the grader recomputed calculation evidence and rejected invalid lineage and SQL-backed clarification.                                                                    |
+| `make test-integration`                                                         | Exit 0, 18 tests passed. Covered duplicate BullMQ delivery, missing Redis jobs, a real grader retry from the durable envelope, expired fences, one-time simulated reservation settlement, budget refusal, and a missing roster cell blocking completion. |
+| `make test-security`                                                            | Exit 0, 50 tests passed. Verified private service authentication, missing-artifact handling, artifact mount isolation, and checkpoint access across service roles, work capabilities and fences.                                                         |
+| `make contracts-check`, `make lint`, `make typecheck`, and `corepack pnpm test` | Exit 0. Both runtimes accepted the same contract vectors, generated sources matched, and all 42 TypeScript tests passed.                                                                                                                                 |
+
+The full fixture suite passed with 168 Python tests.
+
+Optimizer and comparison work kinds are reserved for Phases 4 and 5 respectively. Checkpoint storage and its private interface are in place. Phase 4 connects them to graph resumption. Live inference and hosted migrations were outside this fixture validation.

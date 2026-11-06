@@ -291,6 +291,11 @@ export interface ContractCatalog {
   ExperimentSummary: ExperimentSummary;
   TaskRunSummary: TaskRunSummary;
   HarnessSummary: HarnessSummary;
+  GraphEvent: GraphEvent;
+  GraphProjection: GraphProjection;
+  ExecuteTaskResponse: ExecuteTaskResponse;
+  CheckpointRequest: CheckpointRequest;
+  CheckpointResponse: CheckpointResponse;
 }
 export interface EventRef {
   run_id: Uuid;
@@ -797,4 +802,48 @@ export interface HarnessSummary {
   parent_hash: Digest | null;
   config: HarnessConfig;
   active: boolean;
+}
+export interface GraphEvent {
+  seq: number;
+  node_id: Identifier;
+  edge_id: Identifier;
+  outcome_code: OutcomeCode;
+  elapsed_ms: number;
+  evidence_seq: number | null;
+}
+export interface GraphProjection {
+  schema_version: 1;
+  graph_kind: "worker" | "optimizer";
+  graph_version: Identifier;
+  /**
+   * @minItems 0
+   * @maxItems 120
+   */
+  events: GraphEvent[];
+}
+export interface ExecuteTaskResponse {
+  schema_version: 1;
+  run: RunEnvelope;
+  graph: GraphProjection;
+}
+export interface CheckpointRequest {
+  schema_version: 1;
+  work_id: Uuid;
+  fence: number;
+  graph_version: Identifier;
+  state_version: 1;
+  operation: "read" | "write";
+  seq: number;
+  write_key: Identifier;
+  state: {
+    [k: string]: unknown | undefined;
+  } | null;
+}
+export interface CheckpointResponse {
+  schema_version: 1;
+  thread_id: Digest;
+  input_digest: Digest;
+  state: {
+    [k: string]: unknown | undefined;
+  } | null;
 }

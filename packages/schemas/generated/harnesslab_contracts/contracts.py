@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from pydantic import (
@@ -1302,6 +1302,76 @@ class HarnessSummary(BaseModel):
     active: StrictBool
 
 
+class EvidenceSeq(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0, le=10000)]
+
+
+class GraphEvent(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    seq: Annotated[StrictInt, Field(ge=0, le=119)]
+    node_id: Identifier
+    edge_id: Identifier
+    outcome_code: OutcomeCode
+    elapsed_ms: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    evidence_seq: EvidenceSeq | None
+
+
+class GraphKind(StrEnum):
+    worker = 'worker'
+    optimizer = 'optimizer'
+
+
+class GraphProjection(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    graph_kind: GraphKind
+    graph_version: Identifier
+    events: Annotated[list[GraphEvent], Field(max_length=120, min_length=0)]
+
+
+class ExecuteTaskResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    run: RunEnvelope
+    graph: GraphProjection
+
+
+class Operation1(StrEnum):
+    read = 'read'
+    write = 'write'
+
+
+class CheckpointRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    work_id: Uuid
+    fence: Annotated[StrictInt, Field(ge=1, le=9007199254740991)]
+    graph_version: Identifier
+    state_version: Literal[1]
+    operation: Operation1
+    seq: Annotated[StrictInt, Field(ge=0, le=119)]
+    write_key: Identifier
+    state: dict[str, Any] | None
+
+
+class CheckpointResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    thread_id: Digest
+    input_digest: Digest
+    state: dict[str, Any] | None
+
+
 class ContractCatalog(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1436,3 +1506,12 @@ class ContractCatalog(BaseModel):
     ExperimentSummary_1: Annotated[ExperimentSummary, Field(alias='ExperimentSummary')]
     TaskRunSummary_1: Annotated[TaskRunSummary, Field(alias='TaskRunSummary')]
     HarnessSummary_1: Annotated[HarnessSummary, Field(alias='HarnessSummary')]
+    GraphEvent_1: Annotated[GraphEvent, Field(alias='GraphEvent')]
+    GraphProjection_1: Annotated[GraphProjection, Field(alias='GraphProjection')]
+    ExecuteTaskResponse_1: Annotated[
+        ExecuteTaskResponse, Field(alias='ExecuteTaskResponse')
+    ]
+    CheckpointRequest_1: Annotated[CheckpointRequest, Field(alias='CheckpointRequest')]
+    CheckpointResponse_1: Annotated[
+        CheckpointResponse, Field(alias='CheckpointResponse')
+    ]

@@ -156,6 +156,13 @@ services:
       EVALUATOR_URL: http://evaluator:8000
       OPTIMIZER_URL: http://optimizer:8000
       HL_MODE: fixture
+      HL_RUNNER_TOKEN: fixture-dispatcher-to-runner
+      HL_EVALUATOR_TOKEN: fixture-dispatcher-to-evaluator
+      HL_WORKER_CHECKPOINT_TOKEN: fixture-worker-to-dispatcher
+      HL_OPTIMIZER_CHECKPOINT_TOKEN: fixture-optimizer-to-dispatcher
+      HL_DISPATCHER_ARTIFACT_DIR: /fixture
+    volumes:
+      - ../../.artifacts/online-fixture/dispatcher:/fixture:ro
     depends_on:
       control-db:
         condition: service_healthy
@@ -190,6 +197,11 @@ services:
     command: ["uvicorn", "harnesslab_runner.http:app", "--host", "0.0.0.0"]
     environment:
       HL_MODE: fixture
+      HL_DISPATCHER_TOKEN: fixture-dispatcher-to-runner
+      HL_SANDBOX_DEV_RUNTIME_MAP_FILE: /fixture/dev.json
+      HL_SANDBOX_VALIDATION_RUNTIME_MAP_FILE: /fixture/validation.json
+    volumes:
+      - ../../.artifacts/online-fixture/runner:/fixture:ro
     healthcheck: *python-health
     networks: [private, sandbox]
 
@@ -203,6 +215,11 @@ services:
         SERVICE_PACKAGE: harnesslab-eval
     init: true
     command: ["uvicorn", "harnesslab_eval.http:app", "--host", "0.0.0.0"]
+    environment:
+      HL_DISPATCHER_TOKEN: fixture-dispatcher-to-evaluator
+      HL_EVALUATOR_ARTIFACT_DIR: /fixture
+    volumes:
+      - ../../.artifacts/online-fixture/evaluator:/fixture:ro
     healthcheck: *python-health
     networks: [private]
 

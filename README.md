@@ -67,3 +67,20 @@ uv run --locked pytest -q tests/unit/test_harness.py tests/integration/test_mcp.
 ```
 
 The fixture uses scripted model turns, a real MCP stdio session and a variant-scoped PostgreSQL login. `make run-fixture` prints a v1 run envelope with the answer, evidence and trace digest. The runner starts the MCP subprocess with the selected sandbox credential and the public metric catalog. Build the runner with `make infra-up` before the image integration test.
+
+## Durable fixture delivery
+
+After the fixture benchmark has been generated and seeded, migrate the local control database and materialize the service-specific fixture mounts.
+
+```sh
+make db-migrate
+make phase3-artifacts
+make dispatch-fixture
+make grader-replay
+make test-integration
+make test-security
+```
+
+`make dispatch-fixture` submits one preset development task and prints the experiment ID. The dispatcher relays its reference through BullMQ, saves the worker envelope, calls the evaluator, and commits the grade and trace to control PostgreSQL. A grading retry reads the saved envelope. Use the local fixture database roles for these commands.
+
+The dispatcher receives only prompts and benchmark manifests. The evaluator receives manifests and oracles. The runner receives variant-scoped runtime maps. Compose mounts these three directories separately and supplies distinct private bearer identities. The fixture packaging command copies neither holdout data nor sandbox seed credentials.

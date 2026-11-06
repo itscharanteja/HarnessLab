@@ -10,6 +10,8 @@ bootstrap:
 	uv sync --locked --all-packages
 
 infra-up:
+	mkdir -p -m 700 .artifacts/online-fixture
+	mkdir -p .artifacts/online-fixture/dispatcher .artifacts/online-fixture/runner .artifacts/online-fixture/evaluator
 	$(COMPOSE) up --detach --build --wait --wait-timeout 120
 
 contracts-check:
@@ -47,3 +49,23 @@ config-check:
 
 run-fixture:
 	@uv run --locked python -m harnesslab_runner.fixture run
+
+.PHONY: db-migrate phase3-artifacts grader-replay test-integration test-security
+db-migrate:
+	uv run --locked python scripts/db_migrate.py
+
+phase3-artifacts:
+	uv run --locked python scripts/phase3_artifacts.py
+
+grader-replay:
+	uv run --locked pytest -q tests/regression/test_grader.py
+
+test-integration:
+	uv run --locked pytest -q tests/integration
+
+test-security:
+	uv run --locked pytest -q tests/security
+
+.PHONY: dispatch-fixture
+dispatch-fixture:
+	$(COMPOSE) exec -T dispatcher node apps/dispatcher/src/cli.ts

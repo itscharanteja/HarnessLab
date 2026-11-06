@@ -5,6 +5,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
   "jsonschema[format-nongpl]==4.26.0",
   "pydantic==2.14.3",
+  "rfc8785==0.1.4",
 ]
 
 [build-system]

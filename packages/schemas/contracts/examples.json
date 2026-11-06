@@ -998,5 +998,53 @@
     "payload": {
       "limit": "5"
     }
+  },
+  {
+    "contract": "CheckpointRequest",
+    "label": "fenced worker checkpoint",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "work_id": "9d7fd847-94ad-423f-b15f-2f1e5be9a684",
+      "fence": 1,
+      "graph_version": "worker_v1",
+      "state_version": 1,
+      "operation": "write",
+      "seq": 0,
+      "write_key": "snapshot",
+      "state": {
+        "turn": 0
+      }
+    }
+  },
+  {
+    "contract": "CheckpointRequest",
+    "label": "checkpoint rejects a caller-supplied thread",
+    "valid": false,
+    "payload": {
+      "schema_version": 1,
+      "work_id": "9d7fd847-94ad-423f-b15f-2f1e5be9a684",
+      "fence": 1,
+      "graph_version": "worker_v1",
+      "state_version": 1,
+      "operation": "write",
+      "seq": 0,
+      "write_key": "snapshot",
+      "state": {
+        "turn": 0
+      },
+      "thread_id": "unsafe"
+    }
+  },
+  {
+    "contract": "GraphProjection",
+    "label": "empty worker projection before graph start",
+    "valid": true,
+    "payload": {
+      "schema_version": 1,
+      "graph_kind": "worker",
+      "graph_version": "worker_v1",
+      "events": []
+    }
   }
 ]

@@ -7,6 +7,7 @@ from pathlib import Path
 from time import monotonic
 from typing import Literal, TypedDict
 
+from harnesslab_contracts.replay import trace_digest
 from harnesslab_contracts.validate import accepts
 from harnesslab_mcp.server import TOOL_ARGS
 from harnesslab_mcp.sql_policy import MAX_SQL_BYTES, QueryRejected, check_query
@@ -65,6 +66,7 @@ class RunContext:
     mcp: DataOpsSession
     started: float
     deadline: float
+    graph_events: list[dict] | None = None
 
     @property
     def config(self) -> dict:
@@ -225,7 +227,16 @@ async def model_turn(state: WorkerState, runtime: Runtime[RunContext]) -> Worker
                 return state
             if name == "execute_readonly_sql":
                 state["sql_attempted"] = True
-        policy(state, ctx, "malformed_action", correlation=correlation)
+        code = (
+            "malformed_sql_action"
+            if (
+                isinstance(action, dict)
+                and action.get("name") == "execute_readonly_sql"
+                and action.get("kind") == "tool"
+            )
+            else "malformed_action"
+        )
+        policy(state, ctx, code, correlation=correlation)
         return state
 
     if private_data(raw):
@@ -331,7 +342,7 @@ def finish(state: WorkerState, ctx: RunContext, answer: dict):
     emit(state, ctx.started, "final_output", state["result"], answer)
 
 
-def route_action(state: WorkerState, runtime: Runtime[RunContext]) -> WorkerState:
+async def route_action(state: WorkerState, runtime: Runtime[RunContext]) -> WorkerState:
     state = state.copy()
     ctx = runtime.context
     action = state["action"]
@@ -520,11 +531,37 @@ def next_node(state: WorkerState) -> str:
     return "model_turn"
 
 
+def observed(name, node):
+    async def invoke(state: WorkerState, runtime: Runtime[RunContext]) -> WorkerState:
+        updated = await node(state, runtime)
+        projection = runtime.context.graph_events
+        if projection is not None:
+            prior = projection[-1]["node_id"] if projection else "start"
+            events = updated["events"]
+            link = events[-1] if len(events) > len(state["events"]) else None
+            projection.append(
+                {
+                    "seq": len(projection),
+                    "node_id": name,
+                    "edge_id": f"{prior}_to_{name}",
+                    "outcome_code": link["outcome_code"] if link else "ok",
+                    "elapsed_ms": max(0, int((monotonic() - runtime.context.started) * 1000)),
+                    "evidence_seq": link["seq"] if link else None,
+                }
+            )
+        return updated
+
+    return invoke
+
+
 def worker_graph(checkpointer=None):
     graph = StateGraph(WorkerState, context_schema=RunContext)
-    graph.add_node("model_turn", model_turn)
-    graph.add_node("route_action", route_action)
-    graph.add_node("dispatch", dispatch)
+    for name, node in (
+        ("model_turn", model_turn),
+        ("route_action", route_action),
+        ("dispatch", dispatch),
+    ):
+        graph.add_node(name, observed(name, node))
     graph.add_edge(START, "model_turn")
     graph.add_conditional_edges(
         "model_turn",
@@ -562,6 +599,7 @@ async def execute(
     catalog: Path,
     *,
     checkpointer: InMemorySaver | None = None,
+    graph_events: list[dict] | None = None,
 ) -> dict:
     validate_request(request)
     manifest = request["manifest"]
@@ -633,7 +671,9 @@ async def execute(
                         state = await graph.ainvoke(
                             state,
                             config,
-                            context=RunContext(request, model, mcp, started, deadline),
+                            context=RunContext(
+                                request, model, mcp, started, deadline, graph_events
+                            ),
                             durability="sync",
                         )
         except TimeoutError:
@@ -653,30 +693,24 @@ async def execute(
             state = snapshot.values or state
             state["answer"] = None
             state["result"] = "infrastructure_error"
+            code = "run_interrupted" if snapshot.values else "mcp_transport"
             emit(
                 state,
                 started,
                 "policy_decision",
-                "mcp_transport",
-                {"reason": "mcp_transport", "safety_violation": False},
+                code,
+                {"reason": code, "safety_violation": False},
             )
 
     state = STATE.validate_python(state, strict=True)
     events = state["events"]
-    replay_events = [
-        {key: value for key, value in event.items() if key not in {"run_id", "elapsed_ms"}}
-        for event in events
-    ]
-    for event in replay_events:
-        if event["kind"] == "model_usage":
-            event["payload"] = {"input_tokens": 0, "output_tokens": 0, "request_id": None}
     envelope = {
         "schema_version": 1,
         "manifest": manifest,
         "answer": state["answer"],
         "events": events,
         "result": state["result"],
-        "trace_digest": digest(replay_events),
+        "trace_digest": trace_digest(events),
     }
     if not accepts("RunEnvelope", envelope):
         raise ValueError("Invalid runner envelope")

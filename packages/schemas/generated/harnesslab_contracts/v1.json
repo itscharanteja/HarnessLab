@@ -256,7 +256,12 @@
     },
     "HarnessSummary": {
       "$ref": "#/$defs/HarnessSummary"
-    }
+    },
+    "GraphEvent": { "$ref": "#/$defs/GraphEvent" },
+    "GraphProjection": { "$ref": "#/$defs/GraphProjection" },
+    "ExecuteTaskResponse": { "$ref": "#/$defs/ExecuteTaskResponse" },
+    "CheckpointRequest": { "$ref": "#/$defs/CheckpointRequest" },
+    "CheckpointResponse": { "$ref": "#/$defs/CheckpointResponse" }
   },
   "required": [
     "Digest",
@@ -342,7 +347,12 @@
     "GradeTaskResponse",
     "ExperimentSummary",
     "TaskRunSummary",
-    "HarnessSummary"
+    "HarnessSummary",
+    "GraphEvent",
+    "GraphProjection",
+    "ExecuteTaskResponse",
+    "CheckpointRequest",
+    "CheckpointResponse"
   ],
   "$defs": {
     "Digest": {
@@ -3213,6 +3223,183 @@
         }
       },
       "required": ["hash", "parent_hash", "config", "active"]
+    },
+    "GraphEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 119
+        },
+        "node_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "edge_id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "outcome_code": {
+          "$ref": "#/$defs/OutcomeCode"
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "evidence_seq": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "seq",
+        "node_id",
+        "edge_id",
+        "outcome_code",
+        "elapsed_ms",
+        "evidence_seq"
+      ]
+    },
+    "GraphProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "graph_kind": {
+          "type": "string",
+          "enum": ["worker", "optimizer"]
+        },
+        "graph_version": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GraphEvent"
+          },
+          "minItems": 0,
+          "maxItems": 120
+        }
+      },
+      "required": ["schema_version", "graph_kind", "graph_version", "events"]
+    },
+    "ExecuteTaskResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "run": {
+          "$ref": "#/$defs/RunEnvelope"
+        },
+        "graph": {
+          "$ref": "#/$defs/GraphProjection"
+        }
+      },
+      "required": ["schema_version", "run", "graph"]
+    },
+    "CheckpointRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "work_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "fence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "graph_version": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "state_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "operation": {
+          "type": "string",
+          "enum": ["read", "write"]
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 119
+        },
+        "write_key": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": true,
+              "maxProperties": 32
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "work_id",
+        "fence",
+        "graph_version",
+        "state_version",
+        "operation",
+        "seq",
+        "write_key",
+        "state"
+      ]
+    },
+    "CheckpointResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "thread_id": {
+          "$ref": "#/$defs/Digest"
+        },
+        "input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": true,
+              "maxProperties": 32
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["schema_version", "thread_id", "input_digest", "state"]
     }
   }
 }

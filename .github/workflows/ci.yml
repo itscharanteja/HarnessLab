@@ -25,6 +25,7 @@ jobs:
       - run: make contracts-check lint typecheck
       - run: corepack pnpm test
       - run: make benchmark-generate benchmark-seed benchmark-verify MODE=fixture
+      - run: make db-migrate phase3-artifacts grader-replay
       - run: make config-check run-fixture
       - run: uv run --locked pytest -q
       - run: corepack pnpm build
