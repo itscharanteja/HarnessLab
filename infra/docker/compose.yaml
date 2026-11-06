@@ -123,6 +123,17 @@ services:
     init: true
     environment:
       CONTROL_API_DSN: postgresql://hl_api:fixture_api@control-db:5432/harnesslab_control
+      CONTROL_PROMOTER_DSN: postgresql://hl_promoter:fixture_promoter@control-db:5432/harnesslab_control
+      HL_AUTH_MODE: fixture
+      HL_PUBLIC_ORIGIN: http://localhost:${WEB_PORT:-3000}
+      HL_PROXY_TOKEN: fixture-web-api-proxy-secret-00000001
+      HL_SESSION_SIGNING_KEY: fixture-local-session-signing-key-0001
+      HL_FIXTURE_OPERATOR_TOKEN: fixture-local-operator-token-00000001
+      HL_FIXTURE_OPERATOR_SUBJECT: 67cf8d62-a69d-440e-aee0-3451430099cd
+      HL_OPERATOR_SUBJECTS: 67cf8d62-a69d-440e-aee0-3451430099cd
+      HL_DISPATCHER_INTERNAL_URL: http://dispatcher:4001
+      HL_API_DISPATCH_TOKEN: fixture-api-dispatcher-token-00000001
+      HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-0}"
       REDIS_URL: redis://redis:6379/0
       HL_MODE: fixture
     ports:
@@ -162,6 +173,8 @@ services:
       HL_WORKER_CHECKPOINT_TOKEN: fixture-worker-to-dispatcher
       HL_OPTIMIZER_CHECKPOINT_TOKEN: fixture-optimizer-to-dispatcher
       HL_DISPATCHER_ARTIFACT_DIR: /fixture
+      HL_API_DISPATCH_TOKEN: fixture-api-dispatcher-token-00000001
+      HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-0}"
     volumes:
       - ../../.artifacts/online-fixture/dispatcher:/fixture:ro
     depends_on:
@@ -252,6 +265,10 @@ services:
     init: true
     ports:
       - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    environment:
+      HL_PUBLIC_ORIGIN: http://localhost:${WEB_PORT:-3000}
+      HL_API_INTERNAL_URL: http://api:4000
+      HL_PROXY_TOKEN: fixture-web-api-proxy-secret-00000001
     depends_on:
       api:
         condition: service_healthy

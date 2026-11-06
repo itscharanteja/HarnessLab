@@ -1239,9 +1239,7 @@ class ExperimentSubmit2(BaseModel):
         extra='forbid',
     )
     scope: Literal['full_live']
-    max_spend_microusd: Annotated[
-        StrictInt | None, Field(ge=1, le=9007199254740991)
-    ] = None
+    max_spend_microusd: Annotated[StrictInt, Field(ge=1, le=9007199254740991)]
 
 
 class ExperimentSubmit(RootModel[ExperimentSubmit1 | ExperimentSubmit2]):
@@ -1272,6 +1270,119 @@ class RollbackRequest(BaseModel):
     )
     expected_revision: Annotated[StrictInt, Field(ge=1, le=9007199254740991)]
     reason: Annotated[StrictStr, Field(max_length=1200, min_length=1, pattern='\\S')]
+
+
+class EmptyCommand(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+
+
+class DispatchSubmission(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    principal: Annotated[StrictStr, Field(pattern='^(public|operator):[0-9a-f-]{36}$')]
+    idempotency_key: Annotated[StrictStr, Field(pattern='^[A-Za-z0-9_-]{1,100}$')]
+    submission: ExperimentSubmit
+
+
+class DispatchCancellation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    principal: Annotated[StrictStr, Field(pattern='^(public|operator):[0-9a-f-]{36}$')]
+    idempotency_key: Annotated[StrictStr, Field(pattern='^[A-Za-z0-9_-]{1,100}$')]
+    id: Uuid
+
+
+class NextCursor(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(max_length=800, min_length=1)]
+
+
+class Role(StrEnum):
+    baseline = 'baseline'
+    candidate = 'candidate'
+
+
+class ExperimentArmView(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    hash: Digest
+    role: Role
+    ordinal: Annotated[StrictInt, Field(ge=0, le=3)]
+    disposition: OutcomeCode
+
+
+class Patch(RootModel[list[PatchOperation]]):
+    root: Annotated[list[PatchOperation], Field(max_length=2)]
+
+
+class Rationale(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(max_length=1200, min_length=1)]
+
+
+class ProposalView(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    ordinal: Annotated[StrictInt, Field(ge=0, le=2)]
+    candidate_hash: Digest | None
+    patch: Patch | None
+    rationale: Rationale | None
+    evidence_refs: Annotated[list[EventRef], Field(max_length=15)]
+    status: OutcomeCode
+    reason: OutcomeCode | None
+    expected_metric: ExpectedMetric | None
+    direction: Direction | None
+
+
+class Kind1(StrEnum):
+    promote = 'promote'
+    reject = 'reject'
+    rollback = 'rollback'
+
+
+class ReviewView(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Kind1
+    current_revision: Annotated[StrictInt, Field(ge=1, le=2147483647)]
+    created_at: UtcTimestamp
+    actor: Annotated[StrictStr, Field(max_length=200, min_length=1)]
+    reason: Annotated[StrictStr, Field(max_length=600, min_length=1)]
+    from_hash: Digest
+    to_hash: Digest
+
+
+class ExperimentComparisons(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    items: Annotated[list[EvaluationReport], Field(max_length=6)]
+
+
+class Diff(RootModel[list[PatchOperation]]):
+    root: Annotated[list[PatchOperation], Field(max_length=7)]
+
+
+class PublicationAccepted(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id: Uuid
+    published: Literal[True]
+
+
+class ReviewAccepted(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    code: Literal['ok']
+    decision_id: Uuid
+    revision: Annotated[StrictInt, Field(ge=1, le=2147483647)]
 
 
 class PageQuery(BaseModel):
@@ -1420,7 +1531,7 @@ class CheckpointResponse(BaseModel):
     state: dict[str, Any] | None
 
 
-class Kind1(StrEnum):
+class Kind2(StrEnum):
     tool_request = 'tool_request'
     tool_result = 'tool_result'
     policy_decision = 'policy_decision'
@@ -1433,7 +1544,7 @@ class DiagnosisEvent(BaseModel):
         extra='forbid',
     )
     seq: Annotated[StrictInt, Field(ge=0, le=10000)]
-    kind: Kind1
+    kind: Kind2
     code: OutcomeCode
     tool: ToolName | None
 
@@ -1558,6 +1669,63 @@ class OptimizeResponse(BaseModel):
     ]
     graph: GraphProjection
     usage: ModelUsage
+
+
+class ExperimentPage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    items: Annotated[list[ExperimentSummary], Field(max_length=100)]
+    next_cursor: NextCursor | None
+
+
+class RunPage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    items: Annotated[list[TaskRunSummary], Field(max_length=100)]
+    next_cursor: NextCursor | None
+
+
+class HarnessPage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    items: Annotated[list[HarnessSummary], Field(max_length=100)]
+    next_cursor: NextCursor | None
+
+
+class ExperimentDetail(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    experiment: ExperimentSummary
+    published: StrictBool
+    channel_revision: Annotated[StrictInt, Field(ge=1, le=2147483647)]
+    active_revision: Annotated[StrictInt | None, Field(ge=1, le=2147483647)] = None
+    channel: Annotated[StrictStr | None, Field(max_length=60, min_length=1)] = None
+    arms: Annotated[list[ExperimentArmView], Field(max_length=4)]
+    proposals: Annotated[list[ProposalView], Field(max_length=3)]
+    decisions: Annotated[list[ReviewView], Field(max_length=30)]
+    optimizer_graph: GraphProjection | None = None
+
+
+class RunTracePage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    run: TaskRunSummary
+    items: Annotated[list[TraceEvent], Field(max_length=100)]
+    next_cursor: NextCursor | None
+    worker_graph: GraphProjection | None = None
+
+
+class HarnessDetail(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    harness: HarnessSummary
+    diff: Diff | None
 
 
 class ContractCatalog(BaseModel):
@@ -1688,6 +1856,29 @@ class ContractCatalog(BaseModel):
     ]
     DecisionRequest_1: Annotated[DecisionRequest, Field(alias='DecisionRequest')]
     RollbackRequest_1: Annotated[RollbackRequest, Field(alias='RollbackRequest')]
+    EmptyCommand_1: Annotated[EmptyCommand, Field(alias='EmptyCommand')]
+    DispatchSubmission_1: Annotated[
+        DispatchSubmission, Field(alias='DispatchSubmission')
+    ]
+    DispatchCancellation_1: Annotated[
+        DispatchCancellation, Field(alias='DispatchCancellation')
+    ]
+    ExperimentPage_1: Annotated[ExperimentPage, Field(alias='ExperimentPage')]
+    RunPage_1: Annotated[RunPage, Field(alias='RunPage')]
+    HarnessPage_1: Annotated[HarnessPage, Field(alias='HarnessPage')]
+    ExperimentArmView_1: Annotated[ExperimentArmView, Field(alias='ExperimentArmView')]
+    ProposalView_1: Annotated[ProposalView, Field(alias='ProposalView')]
+    ReviewView_1: Annotated[ReviewView, Field(alias='ReviewView')]
+    ExperimentDetail_1: Annotated[ExperimentDetail, Field(alias='ExperimentDetail')]
+    ExperimentComparisons_1: Annotated[
+        ExperimentComparisons, Field(alias='ExperimentComparisons')
+    ]
+    RunTracePage_1: Annotated[RunTracePage, Field(alias='RunTracePage')]
+    HarnessDetail_1: Annotated[HarnessDetail, Field(alias='HarnessDetail')]
+    PublicationAccepted_1: Annotated[
+        PublicationAccepted, Field(alias='PublicationAccepted')
+    ]
+    ReviewAccepted_1: Annotated[ReviewAccepted, Field(alias='ReviewAccepted')]
     PageQuery_1: Annotated[PageQuery, Field(alias='PageQuery')]
     ExecuteTaskRequest_1: Annotated[
         ExecuteTaskRequest, Field(alias='ExecuteTaskRequest')

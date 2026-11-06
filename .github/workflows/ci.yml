@@ -28,6 +28,7 @@ jobs:
       - run: make db-migrate phase3-artifacts grader-replay
       - run: make config-check run-fixture optimize-fixture
       - run: make gates-check holdout-run MODE=fixture
+      - run: make api-check
       - run: uv run --locked pytest -q
       - run: corepack pnpm build
       - run: corepack pnpm exec playwright install --with-deps chromium

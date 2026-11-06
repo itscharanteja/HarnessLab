@@ -286,6 +286,8 @@ export async function submitTrial(
   root: string,
   key: string,
   live?: LiveTrial,
+  fixturePrincipal = "local-trial",
+  commandDigest?: string,
 ) {
   if (!/^[a-zA-Z0-9_-]{1,100}$/.test(key))
     throw new DispatchError("invalid_idempotency_key");
@@ -344,15 +346,50 @@ export async function submitTrial(
     price,
     trial,
   };
-  const principal = live?.principal ?? "local-trial";
+  const principal = live?.principal ?? fixturePrincipal;
+  const publicFixture = !live && principal.startsWith("public:");
   const channel = live?.channel ?? "fixture";
-  const requestHash = digest({
-    mode,
-    channel,
-    manifest,
-    cap: live?.maxSpend.toString() ?? "0",
-  });
+  const requestHash =
+    commandDigest ??
+    digest({
+      mode,
+      channel,
+      manifest,
+      cap: live?.maxSpend.toString() ?? "0",
+    });
   return transaction(pool, async (db) => {
+    if (publicFixture) {
+      await db.query("SELECT pg_advisory_xact_lock(147016809)");
+      const {
+        rows: [prior],
+      } = await db.query<{ id: string; request_hash: string }>(
+        "SELECT id,request_hash FROM hl.experiments WHERE principal=$1 AND idempotency_key=$2",
+        [principal, key],
+      );
+      if (prior) {
+        if (prior.request_hash !== requestHash)
+          throw new DispatchError("idempotency_conflict");
+        return prior.id;
+      }
+      const {
+        rows: [quota],
+      } = await db.query<{ session: number; active: number; recent: number }>(
+        `SELECT
+          count(*) FILTER (WHERE e.status IN ('queued','running') AND p.principal=$1)::int AS session,
+          count(*) FILTER (WHERE e.status IN ('queued','running'))::int AS active,
+          count(*) FILTER (WHERE p.started_at>clock_timestamp()-interval '1 hour')::int AS recent
+         FROM hl.public_experiments p JOIN hl.experiments e ON e.id=p.experiment_id
+         WHERE e.status IN ('queued','running') OR p.started_at>clock_timestamp()-interval '1 hour'`,
+        [principal],
+      );
+      if (
+        !quota ||
+        quota.session >= 1 ||
+        quota.active >= 2 ||
+        quota.recent >= 10
+      )
+        throw new DispatchError("public_quota");
+    }
     const {
       rows: [baseline],
     } = await db.query<Arm & { revision: number }>(
@@ -415,6 +452,11 @@ export async function submitTrial(
       ))
     )
       throw new DispatchError("experiment_budget");
+    if (publicFixture)
+      await db.query(
+        "INSERT INTO hl.public_experiments(experiment_id,principal) VALUES($1,$2)",
+        [created.id, principal],
+      );
     return created.id;
   });
 }

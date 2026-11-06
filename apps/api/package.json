@@ -11,6 +11,7 @@
     "@harnesslab/control-db": "workspace:*",
     "@harnesslab/schemas": "workspace:*",
     "fastify": "5.12.8",
-    "ioredis": "5.10.1"
+    "ioredis": "5.10.1",
+    "jose": "6.2.3"
   }
 }

@@ -4,6 +4,7 @@ import type { QueueReference } from "@harnesslab/schemas/types";
 import { accepts } from "@harnesslab/schemas/validate";
 import { Queue, Worker } from "bullmq";
 import Fastify from "fastify";
+import { expirePublicTrials, registerApiCommands } from "./api-commands.ts";
 import { registerCheckpoints } from "./checkpoints.ts";
 import {
   deliver,
@@ -95,6 +96,7 @@ let warned = false;
 const poll = setInterval(() => {
   if (polling) return;
   polling = (async () => {
+    await expirePublicTrials(pool);
     await reconcile(pool, queue);
     await relay(pool, queue);
     warned = false;
@@ -116,6 +118,7 @@ registerProbes(app, async () => {
   return checks.every((check) => check.status === "fulfilled");
 });
 registerCheckpoints(app, pool);
+registerApiCommands(app, pool, prompts);
 app.addHook("onClose", async () => {
   clearInterval(poll);
   await polling;

@@ -120,3 +120,13 @@ make holdout-run MODE=release HOLDOUT_ARGS='--baseline /restricted/baseline.yaml
 ```
 
 The container target for this job is `holdout` in `infra/docker/python.Dockerfile`, built with `SERVICE_PATH=agent-runner` and `SERVICE_PACKAGE=harnesslab-runner`. Its entry point accepts the same options, starting with `--mode release`. Mount private artifacts and runtime credentials into the job only. Per-task envelopes stay in the restricted ledger.
+
+## Local fixture API
+
+The browser API is available at `http://localhost:3000/api/v1` after `make infra-up` and `make db-migrate`. Public fixture starts are off by default. To enable them locally, set `HL_PUBLIC_RUNS=1` when starting the stack. `make api-check` temporarily enables them, exercises a real fixture through the Next.js proxy, and restores the prior setting.
+
+Use `GET /api/v1/experiments` to establish a signed session cookie. Submit `{"scope":"demo_fixture"}` to the same URL with that cookie, the site origin and an `Idempotency-Key`. Read experiment progress at `/api/v1/experiments/{id}` and comparison results at `/api/v1/experiments/{id}/comparisons`. Add `?graph=1` to experiment detail or a run trace to request graph events. Published live examples expose aggregate validation comparisons and omit validation task and trace details.
+
+The fixture operator token is available only in the local Compose API configuration. Hosted deployments use Supabase asymmetric access tokens. Set `HL_AUTH_MODE=supabase`, the issuer and audience, and `HL_OPERATOR_SUBJECTS` to the server-maintained list of verified UUIDs. The API derives the signing key endpoint from the issuer unless `HL_SUPABASE_JWKS_URL` is configured. Set separate server secrets for the browser proxy, session signing and API-to-dispatcher calls. [Supabase JWT signing keys](https://supabase.com/docs/guides/auth/signing-keys)
+
+The live dispatcher reads the approved worker and optimizer settings from their profile files, a price profile with `worker` and `optimizer` entries containing decimal-string `input` and `output` prices, and the approved development and validation manifest digests. Each live request must include a spend cap within `HL_MAX_EXPERIMENT_MICRO_USD`.

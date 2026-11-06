@@ -239,6 +239,21 @@
     "RollbackRequest": {
       "$ref": "#/$defs/RollbackRequest"
     },
+    "EmptyCommand": { "$ref": "#/$defs/EmptyCommand" },
+    "DispatchSubmission": { "$ref": "#/$defs/DispatchSubmission" },
+    "DispatchCancellation": { "$ref": "#/$defs/DispatchCancellation" },
+    "ExperimentPage": { "$ref": "#/$defs/ExperimentPage" },
+    "RunPage": { "$ref": "#/$defs/RunPage" },
+    "HarnessPage": { "$ref": "#/$defs/HarnessPage" },
+    "ExperimentArmView": { "$ref": "#/$defs/ExperimentArmView" },
+    "ProposalView": { "$ref": "#/$defs/ProposalView" },
+    "ReviewView": { "$ref": "#/$defs/ReviewView" },
+    "ExperimentDetail": { "$ref": "#/$defs/ExperimentDetail" },
+    "ExperimentComparisons": { "$ref": "#/$defs/ExperimentComparisons" },
+    "RunTracePage": { "$ref": "#/$defs/RunTracePage" },
+    "HarnessDetail": { "$ref": "#/$defs/HarnessDetail" },
+    "PublicationAccepted": { "$ref": "#/$defs/PublicationAccepted" },
+    "ReviewAccepted": { "$ref": "#/$defs/ReviewAccepted" },
     "PageQuery": {
       "$ref": "#/$defs/PageQuery"
     },
@@ -356,6 +371,21 @@
     "ExperimentAccepted",
     "DecisionRequest",
     "RollbackRequest",
+    "EmptyCommand",
+    "DispatchSubmission",
+    "DispatchCancellation",
+    "ExperimentPage",
+    "RunPage",
+    "HarnessPage",
+    "ExperimentArmView",
+    "ProposalView",
+    "ReviewView",
+    "ExperimentDetail",
+    "ExperimentComparisons",
+    "RunTracePage",
+    "HarnessDetail",
+    "PublicationAccepted",
+    "ReviewAccepted",
     "PageQuery",
     "ExecuteTaskRequest",
     "GradeTaskRequest",
@@ -3149,7 +3179,7 @@
               "maximum": 9007199254740991
             }
           },
-          "required": ["scope"]
+          "required": ["scope", "max_spend_microusd"]
         }
       ]
     },
@@ -3212,6 +3242,461 @@
         }
       },
       "required": ["expected_revision", "reason"]
+    },
+    "EmptyCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {},
+      "required": []
+    },
+    "DispatchSubmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "type": "string",
+          "pattern": "^(public|operator):[0-9a-f-]{36}$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,100}$"
+        },
+        "submission": {
+          "$ref": "#/$defs/ExperimentSubmit"
+        }
+      },
+      "required": ["principal", "idempotency_key", "submission"]
+    },
+    "DispatchCancellation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "type": "string",
+          "pattern": "^(public|operator):[0-9a-f-]{36}$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,100}$"
+        },
+        "id": {
+          "$ref": "#/$defs/Uuid"
+        }
+      },
+      "required": ["principal", "idempotency_key", "id"]
+    },
+    "ExperimentPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExperimentSummary"
+          },
+          "maxItems": 100
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["items", "next_cursor"]
+    },
+    "RunPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TaskRunSummary"
+          },
+          "maxItems": 100
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["items", "next_cursor"]
+    },
+    "HarnessPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HarnessSummary"
+          },
+          "maxItems": 100
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["items", "next_cursor"]
+    },
+    "ExperimentArmView": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hash": {
+          "$ref": "#/$defs/Digest"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["baseline", "candidate"]
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "disposition": {
+          "$ref": "#/$defs/OutcomeCode"
+        }
+      },
+      "required": ["hash", "role", "ordinal", "disposition"]
+    },
+    "ProposalView": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "candidate_hash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "patch": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PatchOperation"
+              },
+              "maxItems": 2
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EventRef"
+          },
+          "maxItems": 15
+        },
+        "status": {
+          "$ref": "#/$defs/OutcomeCode"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutcomeCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_metric": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success_rate",
+                "invalid_sql_rate",
+                "tool_calls_per_success",
+                "recovery_rate",
+                "cost_per_success"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["increase", "decrease"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ordinal",
+        "candidate_hash",
+        "patch",
+        "rationale",
+        "evidence_refs",
+        "status",
+        "reason",
+        "expected_metric",
+        "direction"
+      ]
+    },
+    "ReviewView": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["promote", "reject", "rollback"]
+        },
+        "current_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "$ref": "#/$defs/UtcTimestamp"
+        },
+        "actor": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "from_hash": {
+          "$ref": "#/$defs/Digest"
+        },
+        "to_hash": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "kind",
+        "current_revision",
+        "created_at",
+        "actor",
+        "reason",
+        "from_hash",
+        "to_hash"
+      ]
+    },
+    "ExperimentDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "experiment": {
+          "$ref": "#/$defs/ExperimentSummary"
+        },
+        "published": {
+          "type": "boolean"
+        },
+        "channel_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "active_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "channel": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "arms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExperimentArmView"
+          },
+          "maxItems": 4
+        },
+        "proposals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProposalView"
+          },
+          "maxItems": 3
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReviewView"
+          },
+          "maxItems": 30
+        },
+        "optimizer_graph": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GraphProjection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "experiment",
+        "published",
+        "channel_revision",
+        "arms",
+        "proposals",
+        "decisions"
+      ]
+    },
+    "ExperimentComparisons": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvaluationReport"
+          },
+          "maxItems": 6
+        }
+      },
+      "required": ["items"]
+    },
+    "RunTracePage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run": {
+          "$ref": "#/$defs/TaskRunSummary"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TraceEvent"
+          },
+          "maxItems": 100
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "worker_graph": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GraphProjection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["run", "items", "next_cursor"]
+    },
+    "HarnessDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "harness": {
+          "$ref": "#/$defs/HarnessSummary"
+        },
+        "diff": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PatchOperation"
+              },
+              "maxItems": 7
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["harness", "diff"]
+    },
+    "PublicationAccepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "published": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": ["id", "published"]
+    },
+    "ReviewAccepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "ok"
+        },
+        "decision_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      },
+      "required": ["code", "decision_id", "revision"]
     },
     "PageQuery": {
       "type": "object",

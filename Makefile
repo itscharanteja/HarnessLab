@@ -80,3 +80,11 @@ gates-check:
 
 holdout-run:
 	uv run --locked python scripts/holdout_job.py --mode "$(MODE)" $(HOLDOUT_ARGS)
+
+.PHONY: api-check
+api-check:
+	@set -eu; \
+	previous=$$($(COMPOSE) exec -T api printenv HL_PUBLIC_RUNS); \
+	trap 'HL_PUBLIC_RUNS="$$previous" $(COMPOSE) up --detach --no-build --wait api dispatcher web' EXIT; \
+	HL_PUBLIC_RUNS=1 $(COMPOSE) up --detach --no-build --wait api dispatcher web; \
+	HL_API_CHECK=1 uv run --locked pytest -q tests/integration/test_api.py tests/security/test_api_access.py

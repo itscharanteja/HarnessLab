@@ -100,3 +100,20 @@ Phase 5 was exercised against the isolated local fixture environment. No provide
 The full fixture suite passed all 186 Python tests, including the migration upgrade from the original role bootstrap and repeated Phase 4 trials through the new comparison stage.
 
 Real validation and holdout releases require the private release bundles, operator-approved profiles and spend, and the isolated hosted environment. The local promotion tests inject live-like evidence and operate on disposable PostgreSQL databases. They record no live performance claim.
+
+## Phase 6 — Fastify API and access controls
+
+The local fixture stack served the API through the Next.js proxy. The public fixture workflow used scripted model turns and zero provider spend. The Supabase verifier used locally signed tokens and a mocked JWKS endpoint.
+
+| Check                                                          | Outcome                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `make db-migrate`                                              | Exit 0. The additive migration installed the curated read views, public quota ledger and restricted publication function.                                                                                                                                                                                                          |
+| Local Compose builds and proxy smoke                           | The final API, dispatcher and Next.js images started healthy. A proxy read returned HTTP 200, and anonymous fixture submission returned HTTP 403 with the default toggle off.                                                                                                                                                      |
+| `make api-check`                                               | Exit 0, six tests passed. Covered a complete fixture through the proxy, idempotent commands, concurrent per-session and global quotas, the rolling-hour cap, deadline cancellation, operator review and publication, cross-session denial, and published validation trace isolation. The command restored the prior public toggle. |
+| `make lint contracts-check typecheck` and `corepack pnpm test` | Exit 0, 46 TypeScript tests passed. Included ES256 issuer, audience, expiry, signature and operator allowlist checks.                                                                                                                                                                                                              |
+
+\`make test-security\` passed all 55 security tests. The default fixture regression suite passed 190 Python tests with two opt-in browser-path tests skipped. Both opt-in tests passed under \`make api-check\`.
+
+The first API container build reached a Node 22 startup error on a TypeScript parameter property. The API now checks erasable TypeScript syntax and the rebuilt container passed the network checks.
+
+Hosted Supabase verification and live submission await the provisioned deployment and operator credentials. The Phase 7 dashboard will consume the scoped history, comparison and graph endpoints.

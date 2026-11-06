@@ -203,7 +203,7 @@ export type ExperimentSubmit =
     }
   | {
       scope: "full_live";
-      max_spend_microusd?: number;
+      max_spend_microusd: number;
     };
 
 export interface ContractCatalog {
@@ -287,6 +287,21 @@ export interface ContractCatalog {
   ExperimentAccepted: ExperimentAccepted;
   DecisionRequest: DecisionRequest;
   RollbackRequest: RollbackRequest;
+  EmptyCommand: EmptyCommand;
+  DispatchSubmission: DispatchSubmission;
+  DispatchCancellation: DispatchCancellation;
+  ExperimentPage: ExperimentPage;
+  RunPage: RunPage;
+  HarnessPage: HarnessPage;
+  ExperimentArmView: ExperimentArmView;
+  ProposalView: ProposalView;
+  ReviewView: ReviewView;
+  ExperimentDetail: ExperimentDetail;
+  ExperimentComparisons: ExperimentComparisons;
+  RunTracePage: RunTracePage;
+  HarnessDetail: HarnessDetail;
+  PublicationAccepted: PublicationAccepted;
+  ReviewAccepted: ReviewAccepted;
   PageQuery: PageQuery;
   ExecuteTaskRequest: ExecuteTaskRequest;
   GradeTaskRequest: GradeTaskRequest;
@@ -805,6 +820,161 @@ export interface RollbackRequest {
   expected_revision: number;
   reason: string;
 }
+export interface EmptyCommand {}
+export interface DispatchSubmission {
+  principal: string;
+  idempotency_key: string;
+  submission: ExperimentSubmit;
+}
+export interface DispatchCancellation {
+  principal: string;
+  idempotency_key: string;
+  id: Uuid;
+}
+export interface ExperimentPage {
+  /**
+   * @maxItems 100
+   */
+  items: ExperimentSummary[];
+  next_cursor: string | null;
+}
+export interface ExperimentSummary {
+  id: Uuid;
+  status: ExperimentStatus;
+  stage: Stage;
+  scope: ExperimentScope;
+  mode: Mode;
+  baseline_hash: Digest;
+  created_at: UtcTimestamp;
+  completed_at: UtcTimestamp | null;
+  scheduled_runs: number;
+  terminal_runs: number;
+}
+export interface RunPage {
+  /**
+   * @maxItems 100
+   */
+  items: TaskRunSummary[];
+  next_cursor: string | null;
+}
+export interface TaskRunSummary {
+  run_id: Uuid;
+  task_key: TaskKey;
+  stage: Stage;
+  repeat: number;
+  harness_hash: Digest;
+  result: OutcomeCode;
+  grade: Grade | null;
+}
+export interface HarnessPage {
+  /**
+   * @maxItems 100
+   */
+  items: HarnessSummary[];
+  next_cursor: string | null;
+}
+export interface HarnessSummary {
+  hash: Digest;
+  parent_hash: Digest | null;
+  config: HarnessConfig;
+  active: boolean;
+}
+export interface ExperimentArmView {
+  hash: Digest;
+  role: "baseline" | "candidate";
+  ordinal: number;
+  disposition: OutcomeCode;
+}
+export interface ProposalView {
+  ordinal: number;
+  candidate_hash: Digest | null;
+  patch: PatchOperation[] | null;
+  rationale: string | null;
+  /**
+   * @maxItems 15
+   */
+  evidence_refs: EventRef[];
+  status: OutcomeCode;
+  reason: OutcomeCode | null;
+  expected_metric:
+    ("success_rate" | "invalid_sql_rate" | "tool_calls_per_success" | "recovery_rate" | "cost_per_success") | null;
+  direction: ("increase" | "decrease") | null;
+}
+export interface ReviewView {
+  kind: "promote" | "reject" | "rollback";
+  current_revision: number;
+  created_at: UtcTimestamp;
+  actor: string;
+  reason: string;
+  from_hash: Digest;
+  to_hash: Digest;
+}
+export interface ExperimentDetail {
+  experiment: ExperimentSummary;
+  published: boolean;
+  channel_revision: number;
+  active_revision?: number;
+  channel?: string;
+  /**
+   * @maxItems 4
+   */
+  arms: ExperimentArmView[];
+  /**
+   * @maxItems 3
+   */
+  proposals: ProposalView[];
+  /**
+   * @maxItems 30
+   */
+  decisions: ReviewView[];
+  optimizer_graph?: GraphProjection | null;
+}
+export interface GraphProjection {
+  schema_version: 1;
+  graph_kind: "worker" | "optimizer";
+  graph_version: Identifier;
+  /**
+   * @minItems 0
+   * @maxItems 120
+   */
+  events: GraphEvent[];
+}
+export interface GraphEvent {
+  seq: number;
+  node_id: Identifier;
+  edge_id: Identifier;
+  outcome_code: OutcomeCode;
+  elapsed_ms: number;
+  evidence_seq: number | null;
+}
+export interface ExperimentComparisons {
+  /**
+   * @maxItems 6
+   */
+  items: EvaluationReport[];
+}
+export interface RunTracePage {
+  run: TaskRunSummary;
+  /**
+   * @maxItems 100
+   */
+  items: TraceEvent[];
+  next_cursor: string | null;
+  worker_graph?: GraphProjection | null;
+}
+export interface HarnessDetail {
+  harness: HarnessSummary;
+  diff: PatchOperation[] | null;
+}
+export interface PublicationAccepted {
+  id: Uuid;
+  published: true;
+}
+export interface ReviewAccepted {
+  code: "ok";
+  decision_id: Uuid;
+  revision: number;
+}
 export interface PageQuery {
   cursor?: string;
   limit?: number;
@@ -825,51 +995,6 @@ export interface GradeTaskResponse {
   schema_version: 1;
   grade: Grade;
   replay_digest: Digest;
-}
-export interface ExperimentSummary {
-  id: Uuid;
-  status: ExperimentStatus;
-  stage: Stage;
-  scope: ExperimentScope;
-  mode: Mode;
-  baseline_hash: Digest;
-  created_at: UtcTimestamp;
-  completed_at: UtcTimestamp | null;
-  scheduled_runs: number;
-  terminal_runs: number;
-}
-export interface TaskRunSummary {
-  run_id: Uuid;
-  task_key: TaskKey;
-  stage: Stage;
-  repeat: number;
-  harness_hash: Digest;
-  result: OutcomeCode;
-  grade: Grade | null;
-}
-export interface HarnessSummary {
-  hash: Digest;
-  parent_hash: Digest | null;
-  config: HarnessConfig;
-  active: boolean;
-}
-export interface GraphEvent {
-  seq: number;
-  node_id: Identifier;
-  edge_id: Identifier;
-  outcome_code: OutcomeCode;
-  elapsed_ms: number;
-  evidence_seq: number | null;
-}
-export interface GraphProjection {
-  schema_version: 1;
-  graph_kind: "worker" | "optimizer";
-  graph_version: Identifier;
-  /**
-   * @minItems 0
-   * @maxItems 120
-   */
-  events: GraphEvent[];
 }
 export interface ExecuteTaskResponse {
   schema_version: 1;

@@ -84,6 +84,16 @@ export async function experiment(db: ControlClient, item: WorkRow) {
     [item.experiment_id],
   );
   if (!record) throw new DispatchError("invalid_experiment");
+  if (["queued", "running"].includes(record.status)) {
+    const expired = await db.query(
+      `UPDATE hl.experiments SET status='cancelled',stage='report',completed_at=clock_timestamp()
+       WHERE id=$1 AND EXISTS(SELECT 1 FROM hl.public_experiments
+           WHERE experiment_id=$1 AND deadline<=clock_timestamp())`,
+      [item.experiment_id],
+    );
+    if (expired.rowCount)
+      return { ...record, status: "cancelled", stage: "report" };
+  }
   return record;
 }
 
@@ -133,6 +143,11 @@ export async function claim(pool: ControlPool, ref: QueueReference) {
       return null;
     }
     await db.query(
+      `UPDATE hl.public_experiments SET deadline=clock_timestamp()+interval '120 seconds'
+       WHERE experiment_id=$1 AND deadline IS NULL`,
+      [item.experiment_id],
+    );
+    await db.query(
       "UPDATE hl.experiments SET status='running' WHERE id=$1 AND status='queued'",
       [item.experiment_id],
     );
@@ -143,7 +158,10 @@ export async function claim(pool: ControlPool, ref: QueueReference) {
 export async function renew(pool: ControlPool, lease: Lease) {
   const result = await pool.query(
     `UPDATE hl.work_items SET lease_until=clock_timestamp()+($4::int * interval '1 ms')
-       WHERE id=$1 AND fence=$2 AND lease_token=$3 AND state='running' AND lease_until>clock_timestamp()`,
+       WHERE id=$1 AND fence=$2 AND lease_token=$3 AND state='running' AND lease_until>clock_timestamp()
+       AND NOT EXISTS(SELECT 1 FROM hl.experiments e WHERE e.id=hl.work_items.experiment_id AND e.status='cancelled')
+       AND NOT EXISTS(SELECT 1 FROM hl.public_experiments p WHERE p.experiment_id=hl.work_items.experiment_id
+           AND p.deadline<=clock_timestamp())`,
     [lease.id, lease.fence, lease.lease_token, LEASE_MS],
   );
   return result.rowCount === 1;
@@ -204,9 +222,10 @@ export async function reserveAndMark(
     }
     await db.query(
       `UPDATE hl.work_items SET reservation_micros=COALESCE(reservation_micros,$2),
-           effect_started=$3,worker_deadline=COALESCE(worker_deadline,clock_timestamp()+interval '90 seconds')
+           effect_started=$3,worker_deadline=COALESCE(worker_deadline, LEAST(clock_timestamp()+interval '90 seconds',
+             (SELECT deadline FROM hl.public_experiments WHERE experiment_id=$4)))
            WHERE id=$1`,
-      [item.id, limit.toString(), exp.mode === "live"],
+      [item.id, limit.toString(), exp.mode === "live", item.experiment_id],
     );
     return true;
   });
