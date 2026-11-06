@@ -209,7 +209,7 @@ def test_phase0_roles_upgrade_in_disposable_database():
             migrate(migrator)
             migrate(migrator)
             with psycopg.connect(migrator) as db:
-                assert db.execute("SELECT count(*) FROM hl_migrations.applied").fetchone() == (5,)
+                assert db.execute("SELECT count(*) FROM hl_migrations.applied").fetchone() == (6,)
                 assert db.execute("SELECT count(*) FROM hl.harness_channels").fetchone() == (1,)
         finally:
             admin.execute(sql.SQL("DROP DATABASE {}").format(sql.Identifier(name)))

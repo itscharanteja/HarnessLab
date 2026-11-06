@@ -193,33 +193,40 @@ export async function experimentDetail(
   graph: boolean,
 ) {
   const e = await visibleExperiment(pool, caller, id);
-  const [arms, proposals, decisions, optimizerGraph] = await Promise.all([
-    pool.query(
-      "SELECT hash,role,ordinal,disposition FROM hl.api_arms WHERE experiment_id=$1 ORDER BY ordinal",
-      [id],
-    ),
-    pool.query(
-      `SELECT ordinal,patch,rationale,evidence_refs,status,reason,expected_metric,direction,candidate_hash
+  const [arms, proposals, decisions, optimizerGraph, clusters] =
+    await Promise.all([
+      pool.query(
+        "SELECT hash,role,ordinal,disposition FROM hl.api_arms WHERE experiment_id=$1 ORDER BY ordinal",
+        [id],
+      ),
+      pool.query(
+        `SELECT ordinal,patch,rationale,evidence_refs,status,reason,expected_metric,direction,candidate_hash
        FROM hl.api_proposals WHERE experiment_id=$1 ORDER BY ordinal`,
-      [id],
-    ),
-    caller.operator
-      ? pool.query<{
-          created_at: Date;
-          kind: string;
-          current_revision: number;
-          from_hash: string;
-          to_hash: string;
-          actor: string;
-          reason: string;
-        }>(
-          `SELECT kind,current_revision,created_at,from_hash,to_hash,actor,reason FROM hl.api_decisions
+        [id],
+      ),
+      caller.operator
+        ? pool.query<{
+            created_at: Date;
+            kind: string;
+            current_revision: number;
+            from_hash: string;
+            to_hash: string;
+            actor: string;
+            reason: string;
+          }>(
+            `SELECT kind,current_revision,created_at,from_hash,to_hash,actor,reason FROM hl.api_decisions
            WHERE experiment_id=$1 ORDER BY created_at DESC LIMIT 30`,
-          [id],
-        )
-      : Promise.resolve({ rows: [] }),
-    graph ? projection(pool, id, "optimizer") : Promise.resolve(null),
-  ]);
+            [id],
+          )
+        : Promise.resolve({ rows: [] }),
+      graph ? projection(pool, id, "optimizer") : Promise.resolve(null),
+      graph
+        ? pool.query(
+            "SELECT signature,count,evidence_refs FROM hl.api_clusters WHERE experiment_id=$1 ORDER BY count DESC,signature LIMIT 5",
+            [id],
+          )
+        : Promise.resolve({ rows: [] }),
+    ]);
   return {
     experiment: summary(e),
     published: e.published,
@@ -236,7 +243,14 @@ export async function experimentDetail(
     ...(caller.operator
       ? { active_revision: e.active_revision, channel: e.channel }
       : {}),
-    ...(graph ? { optimizer_graph: optimizerGraph } : {}),
+    ...(graph
+      ? {
+          optimizer_graph: optimizerGraph,
+          clusters: clusters.rows.filter((row) =>
+            accepts("FailureCluster", row),
+          ),
+        }
+      : {}),
   };
 }
 
@@ -424,8 +438,14 @@ export async function harnessDetail(
   const [parent] = row.parent_hash
     ? await selectHarnesses(pool, caller, null, row.parent_hash, 1)
     : [];
+  const { rows: modes } = await pool.query<{ mode: string }>(
+    `SELECT DISTINCT e.mode FROM hl.api_experiments e JOIN hl.api_arms a ON a.experiment_id=e.id
+      WHERE a.hash=$3 AND ${SCOPED} ORDER BY e.mode`,
+    [...scope(caller), hash],
+  );
   return {
     harness: row,
     diff: parent ? diff(parent.config, row.config) : null,
+    modes: modes.map(({ mode }) => mode),
   };
 }

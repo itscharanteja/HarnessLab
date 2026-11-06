@@ -32,7 +32,9 @@ jobs:
       - run: uv run --locked pytest -q
       - run: corepack pnpm build
       - run: corepack pnpm exec playwright install --with-deps chromium
-      - run: corepack pnpm exec playwright test
+      - run: |
+          HL_PUBLIC_RUNS=1 docker compose --file infra/docker/compose.yaml up --detach --no-build --wait
+          make test-e2e
       - if: failure()
         uses: actions/upload-artifact@v5
         with:

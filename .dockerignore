@@ -42,3 +42,5 @@
 !scripts/holdout_job.py
 
 !apps/web/app/api/**
+!apps/web/app/**/*.tsx
+!apps/web/app/*.css

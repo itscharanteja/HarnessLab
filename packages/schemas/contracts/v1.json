@@ -3568,6 +3568,11 @@
           },
           "maxItems": 30
         },
+        "clusters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FailureCluster" },
+          "maxItems": 5
+        },
         "optimizer_graph": {
           "anyOf": [
             {
@@ -3647,6 +3652,12 @@
       "properties": {
         "harness": {
           "$ref": "#/$defs/HarnessSummary"
+        },
+        "modes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Mode" },
+          "maxItems": 2,
+          "uniqueItems": true
         },
         "diff": {
           "anyOf": [

@@ -117,3 +117,14 @@ The local fixture stack served the API through the Next.js proxy. The public fix
 The first API container build reached a Node 22 startup error on a TypeScript parameter property. The API now checks erasable TypeScript syntax and the rebuilt container passed the network checks.
 
 Hosted Supabase verification and live submission await the provisioned deployment and operator credentials. The Phase 7 dashboard will consume the scoped history, comparison and graph endpoints.
+
+## Phase 7 — Dashboard and reproducible demo
+
+| Check                                                          | Outcome                                                                                                                                                                                                                                                           |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `make dev`                                                     | Exit 0. The web, API, dispatcher and private services reported healthy. The diagnosis cluster view migration applied locally.                                                                                                                                     |
+| `make demo-fixture`                                            | Exit 0. The same-origin fixture produced two stored candidate comparisons and printed its comparison URL. The private local report contains the paired counts and ineligibility reasons.                                                                          |
+| `make test-e2e`                                                | Exit 0, four Chromium tests passed. One test launched a real fixture and followed a stored failure into matched traces and a harness diff. The suite covered both graphs, evidence links, an older trace, rejected proposals, and the operator confirmation flow. |
+| `make lint contracts-check typecheck` and `corepack pnpm test` | Exit 0, 46 TypeScript tests passed.                                                                                                                                                                                                                               |
+
+The operator browser tests intercept review responses to verify the candidate hash, report digest, revision and rollback confirmation. Phase 5 tests exercise the corresponding pointer changes in disposable PostgreSQL. No live comparison or production activation took place.

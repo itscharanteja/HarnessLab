@@ -88,3 +88,19 @@ api-check:
 	trap 'HL_PUBLIC_RUNS="$$previous" $(COMPOSE) up --detach --no-build --wait api dispatcher web' EXIT; \
 	HL_PUBLIC_RUNS=1 $(COMPOSE) up --detach --no-build --wait api dispatcher web; \
 	HL_API_CHECK=1 uv run --locked pytest -q tests/integration/test_api.py tests/security/test_api_access.py
+
+.PHONY: dev demo-fixture test-e2e
+dev:
+	HL_PUBLIC_RUNS=1 $(MAKE) infra-up
+	$(MAKE) db-migrate MODE=fixture
+	@if [ ! -s .artifacts/benchmark-fixture/.runtime/dev.json ] || \
+	    [ ! -s .artifacts/benchmark-fixture/.runtime/validation.json ]; then \
+		$(MAKE) benchmark-generate benchmark-seed MODE=fixture; \
+	fi
+	$(MAKE) phase3-artifacts
+
+demo-fixture:
+	uv run --locked python scripts/demo_fixture.py
+
+test-e2e:
+	HL_E2E_BASE_URL="$${HL_E2E_BASE_URL:-http://localhost:$${WEB_PORT:-3000}}" $(PNPM) exec playwright test

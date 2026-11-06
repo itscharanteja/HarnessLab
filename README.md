@@ -130,3 +130,13 @@ Use `GET /api/v1/experiments` to establish a signed session cookie. Submit `{"sc
 The fixture operator token is available only in the local Compose API configuration. Hosted deployments use Supabase asymmetric access tokens. Set `HL_AUTH_MODE=supabase`, the issuer and audience, and `HL_OPERATOR_SUBJECTS` to the server-maintained list of verified UUIDs. The API derives the signing key endpoint from the issuer unless `HL_SUPABASE_JWKS_URL` is configured. Set separate server secrets for the browser proxy, session signing and API-to-dispatcher calls. [Supabase JWT signing keys](https://supabase.com/docs/guides/auth/signing-keys)
 
 The live dispatcher reads the approved worker and optimizer settings from their profile files, a price profile with `worker` and `optimizer` entries containing decimal-string `input` and `output` prices, and the approved development and validation manifest digests. Each live request must include a spend cap within `HL_MAX_EXPERIMENT_MICRO_USD`.
+
+## Dashboard demo
+
+```sh
+make dev
+make demo-fixture
+make test-e2e
+```
+
+Open [HarnessLab](http://localhost:3000) and select **Run fixture experiment** to follow the run in your browser. The terminal demo creates its own session, saves the comparison JSON under `.artifacts`, and prints the experiment's comparison URL. The browser launch keeps the signed session in the tab that will display the results. Follow the [two-minute demo script](docs/demo.md) to inspect diagnosis, matched traces, the harness diff and promotion gates.

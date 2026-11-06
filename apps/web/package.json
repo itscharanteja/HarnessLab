@@ -17,6 +17,7 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@harnesslab/schemas": "workspace:*",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0"
   }

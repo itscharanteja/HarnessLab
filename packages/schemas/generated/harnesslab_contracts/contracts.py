@@ -1707,6 +1707,7 @@ class ExperimentDetail(BaseModel):
     arms: Annotated[list[ExperimentArmView], Field(max_length=4)]
     proposals: Annotated[list[ProposalView], Field(max_length=3)]
     decisions: Annotated[list[ReviewView], Field(max_length=30)]
+    clusters: Annotated[list[FailureCluster] | None, Field(max_length=5)] = None
     optimizer_graph: GraphProjection | None = None
 
 
@@ -1725,6 +1726,7 @@ class HarnessDetail(BaseModel):
         extra='forbid',
     )
     harness: HarnessSummary
+    modes: Annotated[list[Mode] | None, Field(max_length=2)] = None
     diff: Diff | None
 
 

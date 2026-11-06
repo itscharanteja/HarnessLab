@@ -927,7 +927,21 @@ export interface ExperimentDetail {
    * @maxItems 30
    */
   decisions: ReviewView[];
+  /**
+   * @maxItems 5
+   */
+  clusters?: FailureCluster[];
   optimizer_graph?: GraphProjection | null;
+}
+export interface FailureCluster {
+  signature:
+    "schema_before_discovery" | "blocked_repeat" | "unrecovered_fault" | "evidence_gap" | "excess_efficiency_calls";
+  count: number;
+  /**
+   * @minItems 2
+   * @maxItems 3
+   */
+  evidence_refs: EventRef[];
 }
 export interface GraphProjection {
   schema_version: 1;
@@ -964,6 +978,10 @@ export interface RunTracePage {
 }
 export interface HarnessDetail {
   harness: HarnessSummary;
+  /**
+   * @maxItems 2
+   */
+  modes?: Mode[];
   diff: PatchOperation[] | null;
 }
 export interface PublicationAccepted {
@@ -1052,16 +1070,6 @@ export interface AnalyzeDevRequest {
    * @maxItems 30
    */
   runs: DiagnosisRun[];
-}
-export interface FailureCluster {
-  signature:
-    "schema_before_discovery" | "blocked_repeat" | "unrecovered_fault" | "evidence_gap" | "excess_efficiency_calls";
-  count: number;
-  /**
-   * @minItems 2
-   * @maxItems 3
-   */
-  evidence_refs: EventRef[];
 }
 export interface DevDiagnosis {
   schema_version: 1;
