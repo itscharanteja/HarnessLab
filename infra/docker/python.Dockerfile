@@ -31,5 +31,5 @@ FROM runtime AS holdout
 WORKDIR /workspace
 COPY --from=holdout-build /workspace/.venv /workspace/.venv
 COPY datasets/synthetic-business/metrics.json /workspace/datasets/synthetic-business/metrics.json
-COPY scripts/holdout_job.py /workspace/holdout_job.py
-ENTRYPOINT ["python", "/workspace/holdout_job.py"]
+COPY scripts/holdout_job.py scripts/holdout_ledger.py /workspace/scripts/
+ENTRYPOINT ["python", "-m", "scripts.holdout_job"]

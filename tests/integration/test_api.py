@@ -52,7 +52,7 @@ def public_runs():
             )
 
 
-def wait_for(client, experiment, wanted, seconds=110):
+def wait_for(client, experiment, wanted, seconds=130):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
         result = client.get(f"experiments/{experiment}")

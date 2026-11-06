@@ -151,3 +151,23 @@ def test_checkpoint_requires_service_and_work_capability(dispatcher_node, work_c
         "secret": 400,
         "invalid": 401,
     }
+
+
+def test_operations_metrics_require_the_private_credential(dispatcher_node):
+    observed = dispatcher_node("""
+        const url="http://127.0.0.1:4001/internal/v1/metrics";
+        const denied=await fetch(url);
+        const result=await fetch(url,{headers:{authorization:"Bearer "+process.env.HL_OPS_TOKEN}});
+        const body=await result.json();
+        console.log(JSON.stringify({denied:denied.status,status:result.status,body}));
+    """)
+    assert observed["denied"] == 401
+    assert observed["status"] == 200
+    assert set(observed["body"]) == {
+        "schema_version",
+        "queue_depth",
+        "oldest_queue_ms",
+        "expired_leases",
+        "budget_exhaustions_1h",
+        "spend_on_recent_experiments_microusd",
+    }

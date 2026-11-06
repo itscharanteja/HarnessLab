@@ -14,7 +14,7 @@ make lint
 make typecheck
 ```
 
-The fixture web shell opens at [http://localhost:3000](http://localhost:3000). The API readiness endpoint is at [http://localhost:4000/readyz](http://localhost:4000/readyz). The private Python services and dispatcher expose probes only to the local Compose networks. Stop the stack with `docker compose --file infra/docker/compose.yaml down`.
+The fixture dashboard opens at [http://localhost:3000](http://localhost:3000). The API readiness endpoint is at [http://localhost:4000/readyz](http://localhost:4000/readyz). The private Python services and dispatcher expose probes only to the local Compose networks. Stop the stack with `docker compose --file infra/docker/compose.yaml down`.
 
 [.env.example](.env.example) documents local CLI connection strings and service configuration. Copy it to an ignored `.env` for local CLI configuration. Compose supplies the application services with separate local credentials and internal addresses. Set the database port and matching host CLI DSNs together when overriding a port.
 
@@ -140,3 +140,7 @@ make test-e2e
 ```
 
 Open [HarnessLab](http://localhost:3000) and select **Run fixture experiment** to follow the run in your browser. The terminal demo creates its own session, saves the comparison JSON under `.artifacts`, and prints the experiment's comparison URL. The browser launch keeps the signed session in the tab that will display the results. Follow the [two-minute demo script](docs/demo.md) to inspect diagnosis, matched traces, the harness diff and promotion gates.
+
+## Release handoff
+
+Run `make ci` for the complete local fixture validation. Use the [operations runbook](docs/operations.md) for deployment preflight, hosted smoke checks, isolated holdout, recovery and rollback.

@@ -20,21 +20,11 @@ jobs:
           version: "0.13.7"
       - run: uv python install
       - run: corepack enable
-      - run: make bootstrap
-      - run: make infra-up
-      - run: make contracts-check lint typecheck
-      - run: corepack pnpm test
-      - run: make benchmark-generate benchmark-seed benchmark-verify MODE=fixture
-      - run: make db-migrate phase3-artifacts grader-replay
-      - run: make config-check run-fixture optimize-fixture
-      - run: make gates-check holdout-run MODE=fixture
-      - run: make api-check
-      - run: uv run --locked pytest -q
-      - run: corepack pnpm build
-      - run: corepack pnpm exec playwright install --with-deps chromium
       - run: |
-          HL_PUBLIC_RUNS=1 docker compose --file infra/docker/compose.yaml up --detach --no-build --wait
-          make test-e2e
+          set -o pipefail
+          make ci 2>&1 | tee "$RUNNER_TEMP/harnesslab-ci.log"
+        env:
+          CI_BROWSER_SETUP: "1"
       - if: failure()
         uses: actions/upload-artifact@v5
         with:
@@ -42,3 +32,4 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            ${{ runner.temp }}/harnesslab-ci.log

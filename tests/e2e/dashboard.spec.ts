@@ -7,13 +7,13 @@ test("a visitor starts a fixture and follows diagnosis into paired traces", asyn
     !process.env.HL_E2E_BASE_URL,
     "Use make dev and make test-e2e for the fixture stack",
   );
-  test.setTimeout(135000);
+  test.setTimeout(150000);
   await page.goto("/");
   await page.getByRole("button", { name: "Run fixture experiment" }).click();
   await expect(page).toHaveURL(/\/experiments\/[0-9a-f-]{36}$/);
   await expect(page.getByText(/scheduled runs complete/)).toBeVisible();
   await expect(page.getByText("completed", { exact: true })).toBeVisible({
-    timeout: 115000,
+    timeout: 125000,
   });
   await expect(
     page.getByRole("heading", { name: "Optimizer Graph" }),

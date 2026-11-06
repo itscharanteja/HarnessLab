@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sqlite3
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid5
@@ -21,7 +22,10 @@ from harnesslab_runner.fixture import BASELINE, CATALOG, FIXTURE_SETTINGS, Order
 from harnesslab_runner.graph import execute, tool_call
 from harnesslab_runner.model import OpenAITurns, Turn
 from harnesslab_runner.trial_fixture import INVOICES, choose, column, dates, in_period
+from psycopg import Error as PostgresError
 from psycopg.conninfo import conninfo_to_dict
+
+from scripts.holdout_ledger import PostgresLedger
 
 FIXTURE = Path(".artifacts/benchmark-fixture")
 SEED = 20251106
@@ -481,6 +485,8 @@ def main():
         )
         or not os.environ.get("HL_HOLDOUT_API_KEY")
         or not os.environ.get("HL_HOLDOUT_SANDBOX_DATABASE")
+        or os.environ.get("CLOUD_RUN_JOB")
+        and not os.environ.get("HL_HOLDOUT_LEDGER_DSN")
         or not re.fullmatch(r"sha256:[0-9a-f]{64}", os.environ.get("HL_HOLDOUT_IMAGE_DIGEST", ""))
     ):
         parser.error(
@@ -490,7 +496,7 @@ def main():
     os.umask(0o077)
     try:
         return run(args, fixture)
-    except (OSError, ValueError, TypeError, KeyError, sqlite3.Error, BlockingIOError) as exc:
+    except (OSError, ValueError, TypeError, KeyError, sqlite3.Error, PostgresError) as exc:
         raise SystemExit(f"Holdout stopped ({type(exc).__name__})") from None
 
 
@@ -499,16 +505,42 @@ async def check_worker(settings, key):
         pass
 
 
+@contextmanager
+def ledger(work, approved, dsn):
+    if dsn:
+        database = os.environ["HL_HOLDOUT_LEDGER_DATABASE"]
+        if database == os.environ["HL_HOLDOUT_SANDBOX_DATABASE"]:
+            raise ValueError("dedicated_holdout_ledger_required")
+        db = PostgresLedger(dsn, database, approved)
+        try:
+            yield db
+        finally:
+            db.close()
+        return
+    work.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if work.stat().st_mode & 0o077:
+        raise ValueError("private_ledger_directory_required")
+    with (work / ".lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        db = open_ledger(work)
+        try:
+            yield db
+        finally:
+            db.close()
+
+
 def run(args, fixture):
     directory = args.bundle or FIXTURE / "holdout"
     runtime_file = args.runtime_map or FIXTURE / ".runtime/holdout.json"
     work = args.work_dir or Path(".artifacts/holdout-operator")
+    ledger_dsn = None if fixture else os.environ.get("HL_HOLDOUT_LEDGER_DSN")
+    report_dir = Path(os.environ["HL_HOLDOUT_REPORT_DIR"]) if ledger_dsn else work
     if not fixture and (
         not directory.is_absolute()
         or not runtime_file.is_absolute()
         or not work.is_absolute()
         or directory.stat().st_mode & 0o077
-        or runtime_file.stat().st_mode & 0o077
+        or runtime_file.stat().st_mode & (0o022 if ledger_dsn else 0o077)
     ):
         raise ValueError("private_holdout_paths_required")
     manifest = read_json(directory / "manifest.json")
@@ -578,36 +610,34 @@ def run(args, fixture):
             )
         ):
             raise ValueError("isolated_sandbox_required")
-    work.mkdir(mode=0o700, parents=True, exist_ok=True)
-    if work.stat().st_mode & 0o077:
-        raise ValueError("private_ledger_directory_required")
-    with (work / ".lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        db = open_ledger(work)
-        try:
-            # Persist the matched roster commitment before opening prompts or oracles.
-            report = seal_evaluation(db, approved, pin)
-            if report is None:
-                tasks = load_bundle(directory, manifest)
-                if set(runtimes) != {task[0]["variant_id"] for task in tasks.values()}:
-                    raise ValueError("isolated_sandbox_map_mismatch")
-                report = asyncio.run(
-                    run_evaluation(
-                        db,
-                        pin,
-                        roster,
-                        tasks,
-                        runtimes,
-                        {"baseline": baseline.config, "candidate": candidate.config},
-                        key,
-                    )
+    if ledger_dsn and (not report_dir.is_absolute() or report_dir.stat().st_mode & 0o077):
+        raise ValueError("private_holdout_report_destination_required")
+    with ledger(work, approved, ledger_dsn) as db:
+        # Persist the matched roster commitment before opening prompts or oracles.
+        report = seal_evaluation(db, approved, pin)
+        if report is None:
+            tasks = load_bundle(directory, manifest)
+            if set(runtimes) != {task[0]["variant_id"] for task in tasks.values()}:
+                raise ValueError("isolated_sandbox_map_mismatch")
+            report = asyncio.run(
+                run_evaluation(
+                    db,
+                    pin,
+                    roster,
+                    tasks,
+                    runtimes,
+                    {"baseline": baseline.config, "candidate": candidate.config},
+                    key,
                 )
-            output = work / f"{approved}.aggregate.json"
+            )
+        output = report_dir / f"{approved}.aggregate.json"
+        if ledger_dsn:
+            # The committed database report is authoritative across object-store retries.
+            output.write_text(json_text(report) + "\n")
+        else:
             staging = work / f".{approved}.aggregate.tmp"
             staging.write_text(json_text(report) + "\n")
             staging.replace(output)
-        finally:
-            db.close()
     print(f"Private holdout report saved to {output}")
     return 0 if report["comparison"]["complete"] else 1
 

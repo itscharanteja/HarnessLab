@@ -1,0 +1,89 @@
+{
+  "environment": "fixture",
+  "project": "harnesslab-example",
+  "project_number": "123456789012",
+  "region": "us-central1",
+  "public_origin": "https://harnesslab.example.test",
+  "supabase_issuer": "https://example.supabase.co/auth/v1",
+  "operator_subjects": ["67cf8d62-a69d-440e-aee0-3451430099cd"],
+  "services": {
+    "api": {
+      "account": "hl-api@harnesslab-example.iam.gserviceaccount.com",
+      "image": "us-central1-docker.pkg.dev/harnesslab-example/images/api@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "url": "https://harnesslab-api-example.a.run.app"
+    },
+    "dispatcher": {
+      "account": "hl-dispatcher@harnesslab-example.iam.gserviceaccount.com",
+      "image": "us-central1-docker.pkg.dev/harnesslab-example/images/dispatcher@sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "url": "https://harnesslab-dispatcher-example.a.run.app"
+    },
+    "runner": {
+      "account": "hl-runner@harnesslab-example.iam.gserviceaccount.com",
+      "image": "us-central1-docker.pkg.dev/harnesslab-example/images/runner@sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "url": "https://harnesslab-runner-example.a.run.app"
+    },
+    "evaluator": {
+      "account": "hl-evaluator@harnesslab-example.iam.gserviceaccount.com",
+      "image": "us-central1-docker.pkg.dev/harnesslab-example/images/evaluator@sha256:4444444444444444444444444444444444444444444444444444444444444444",
+      "url": "https://harnesslab-evaluator-example.a.run.app"
+    },
+    "optimizer": {
+      "account": "hl-optimizer@harnesslab-example.iam.gserviceaccount.com",
+      "image": "us-central1-docker.pkg.dev/harnesslab-example/images/optimizer@sha256:5555555555555555555555555555555555555555555555555555555555555555",
+      "url": "https://harnesslab-optimizer-example.a.run.app"
+    },
+    "holdout": {
+      "account": "hl-holdout@harnesslab-example.iam.gserviceaccount.com",
+      "image": "us-central1-docker.pkg.dev/harnesslab-example/images/holdout@sha256:6666666666666666666666666666666666666666666666666666666666666666"
+    }
+  },
+  "network": {
+    "online": "hl-online",
+    "subnet": "hl-online-central",
+    "holdout": "hl-holdout",
+    "holdout_subnet": "hl-holdout-central"
+  },
+  "buckets": {
+    "prompts": "hl-example-prompts",
+    "profiles": "hl-example-profiles",
+    "references": "hl-example-references",
+    "holdout": "hl-example-holdout",
+    "reports": "hl-example-reports"
+  },
+  "secrets": {
+    "api-db": "hl-api-db:1",
+    "promoter-db": "hl-promoter-db:1",
+    "redis": "hl-redis:1",
+    "proxy": "hl-proxy:1",
+    "session": "hl-session:1",
+    "api-dispatch": "hl-api-dispatch:1",
+    "ops": "hl-ops:1",
+    "dispatcher-db": "hl-dispatcher-db:1",
+    "runner-token": "hl-runner-token:1",
+    "evaluator-token": "hl-evaluator-token:1",
+    "optimizer-token": "hl-optimizer-token:1",
+    "worker-checkpoint": "hl-worker-checkpoint:1",
+    "optimizer-checkpoint": "hl-optimizer-checkpoint:1",
+    "holdout-provider": "hl-holdout-provider:1",
+    "holdout-ledger": "hl-holdout-ledger:1",
+    "sandbox-dev": "hl-sandbox-dev:1",
+    "sandbox-validation": "hl-sandbox-validation:1",
+    "sandbox-holdout": "hl-sandbox-holdout:1",
+    "runner-provider": "hl-runner-provider:1",
+    "optimizer-provider": "hl-optimizer-provider:1"
+  },
+  "release": {
+    "mode": "fixture",
+    "public_runs": false,
+    "max_spend_microusd": 0,
+    "dev_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "validation_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "holdout": {
+    "manifest_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "release_id": "approved-release-id",
+    "spend_cap_microusd": 500000,
+    "sandbox_database": "hl_release_holdout",
+    "ledger_database": "hl_holdout_results"
+  }
+}

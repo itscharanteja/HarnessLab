@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import httpx
 
 from .internal import InternalError
+from .service_identity import service_identity
 from .validate import accepts
 
 
@@ -55,6 +56,7 @@ class Checkpoint:
                     headers={
                         "authorization": f"Bearer {self.token}",
                         "x-hl-lease-token": self.lease_token,
+                        **await service_identity(self.url),
                     },
                 )
                 response.raise_for_status()

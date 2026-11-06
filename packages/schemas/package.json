@@ -13,7 +13,8 @@
   "exports": {
     "./types": "./generated/contracts.ts",
     "./validate": "./src/validate.ts",
-    "./health": "./src/health.ts"
+    "./health": "./src/health.ts",
+    "./service-identity": "./src/service-identity.ts"
   },
   "devDependencies": {
     "fastify": "5.12.8"

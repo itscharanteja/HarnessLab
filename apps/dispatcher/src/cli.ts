@@ -14,22 +14,41 @@ try {
   const id = await (trial ? submitTrial : submitFixture)(pool, root, key);
   console.log(id);
   if (trial) {
-    const end = Date.now() + 120000;
+    // This operator CLI can wait for a slow local container to finish its stored trial.
+    const end = Date.now() + 300000;
     for (;;) {
-      const {
-        rows: [row],
-      } = await pool.query<{ status: string; report: unknown }>(
-        `SELECT e.status,r.report
-        FROM hl.experiments e LEFT JOIN hl.trial_reports r ON r.experiment_id=e.id WHERE e.id=$1`,
-        [id],
-      );
+      const row = await pool
+        .query<{ status: string; report: unknown }>(
+          `SELECT e.status,r.report
+          FROM hl.experiments e LEFT JOIN hl.trial_reports r ON r.experiment_id=e.id WHERE e.id=$1`,
+          [id],
+        )
+        .then(({ rows }) => rows[0])
+        .catch((error: unknown) => {
+          const transient =
+            error instanceof Error &&
+            ([
+              "Query read timeout",
+              "timeout exceeded when trying to connect",
+            ].includes(error.message) ||
+              ("code" in error &&
+                ["57014", "ETIMEDOUT", "ECONNRESET"].includes(
+                  String(error.code),
+                )));
+          if (!transient) throw error;
+          return undefined;
+        });
       if (row && ["completed", "failed", "cancelled"].includes(row.status)) {
         console.log(JSON.stringify(row.report));
         process.exitCode = row.status === "completed" ? 0 : 1;
         break;
       }
-      if (Date.now() > end) throw new Error("Fixture trial timed out");
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      if (Date.now() > end) {
+        console.error(`Fixture trial is still running. Retry with key ${key}.`);
+        process.exitCode = 1;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 750));
     }
   }
 } catch {

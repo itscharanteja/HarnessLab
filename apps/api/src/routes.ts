@@ -5,6 +5,7 @@ import {
   type ReviewCommand,
 } from "@harnesslab/control-db";
 import type { ContractCatalog } from "@harnesslab/schemas/types";
+import { serviceIdentity } from "@harnesslab/schemas/service-identity";
 import { accepts } from "@harnesslab/schemas/validate";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { ApiError, createAuth, requireOperator, type Caller } from "./auth.ts";
@@ -36,6 +37,11 @@ export function sendError(
   code: string,
 ) {
   reply.header("cache-control", "no-store");
+  if (code === "report_integrity")
+    request.log.warn(
+      { event: "review_integrity_denied", request_id: request.id },
+      "Review denied",
+    );
   if (status === 429) reply.header("retry-after", "60");
   return reply.code(status).send({
     code,
@@ -114,15 +120,18 @@ function dispatcher() {
   ) => {
     let result: Response;
     try {
-      result = await fetch(new URL("/internal/v1/" + path, origin), {
+      const target = new URL("/internal/v1/" + path, origin);
+      const signal = AbortSignal.timeout(10000);
+      result = await fetch(target, {
         method: "POST",
         headers: {
           authorization: `Bearer ${token}`,
           "content-type": "application/json",
+          ...(await serviceIdentity(target, signal)),
         },
         body: JSON.stringify(command),
         redirect: "error",
-        signal: AbortSignal.timeout(10000),
+        signal,
       });
     } catch {
       throw new ApiError(503, "service_unavailable");

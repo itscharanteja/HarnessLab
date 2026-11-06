@@ -173,6 +173,7 @@ services:
       HL_WORKER_CHECKPOINT_TOKEN: fixture-worker-to-dispatcher
       HL_OPTIMIZER_CHECKPOINT_TOKEN: fixture-optimizer-to-dispatcher
       HL_DISPATCHER_ARTIFACT_DIR: /fixture
+      HL_OPS_TOKEN: fixture-private-operations-token-0001
       HL_API_DISPATCH_TOKEN: fixture-api-dispatcher-token-00000001
       HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-0}"
     volumes:

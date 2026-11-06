@@ -6,6 +6,7 @@ import type {
   GradeTaskResponse,
   QueueReference,
 } from "@harnesslab/schemas/types";
+import { serviceIdentity } from "@harnesslab/schemas/service-identity";
 import { accepts } from "@harnesslab/schemas/validate";
 import type { Queue } from "bullmq";
 import { DispatchError, loadPinnedTask } from "./artifacts.ts";
@@ -57,7 +58,7 @@ export async function reconcile(
   pool: ControlPool,
   queue: Queue<QueueReference>,
 ) {
-  await reclaim(pool);
+  const reclaimed = await reclaim(pool);
   const { rows } = await pool.query<Delivery>(
     `SELECT w.id AS work_id,w.generation FROM hl.work_items w
        LEFT JOIN hl.outbox o ON o.work_id=w.id AND o.generation=w.generation
@@ -84,6 +85,7 @@ export async function reconcile(
     SELECT w.id FROM hl.work_items w JOIN hl.experiments e ON e.id=w.experiment_id
     WHERE w.state IN ('done','failed') AND e.completed_at<clock_timestamp()-interval '24 hours'
   )`);
+  return reclaimed;
 }
 
 type Endpoint = { url: URL; token: string };
@@ -115,6 +117,7 @@ export async function postJson(
     headers: {
       authorization: `Bearer ${service.token}`,
       "content-type": "application/json",
+      ...(await serviceIdentity(service.url, signal)),
       ...(lease
         ? {
             "x-hl-work-id": lease.id,

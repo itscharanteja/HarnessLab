@@ -79,7 +79,7 @@ gates-check:
 	uv run --locked pytest -q tests/regression/test_gates.py
 
 holdout-run:
-	uv run --locked python scripts/holdout_job.py --mode "$(MODE)" $(HOLDOUT_ARGS)
+	uv run --locked python -m scripts.holdout_job --mode "$(MODE)" $(HOLDOUT_ARGS)
 
 .PHONY: api-check
 api-check:
@@ -104,3 +104,43 @@ demo-fixture:
 
 test-e2e:
 	HL_E2E_BASE_URL="$${HL_E2E_BASE_URL:-http://localhost:$${WEB_PORT:-3000}}" $(PNPM) exec playwright test
+
+.PHONY: ci deploy-check smoke-hosted live-smoke live-trial
+ci:
+	$(MAKE) bootstrap
+	@if [ "$${HL_CI_REUSE_IMAGES:-0}" = 1 ]; then \
+		$(COMPOSE) up --detach --no-build --wait --wait-timeout 120; \
+	else \
+		$(MAKE) infra-up; \
+	fi
+	$(MAKE) contracts-check lint typecheck
+	$(PNPM) test
+	$(MAKE) benchmark-generate benchmark-seed benchmark-verify MODE=fixture
+	$(MAKE) db-migrate phase3-artifacts grader-replay MODE=fixture
+	$(MAKE) config-check run-fixture gates-check holdout-run MODE=fixture
+	$(MAKE) api-check
+	uv run --locked pytest -q
+	$(PNPM) build
+	@if [ "$${CI_BROWSER_SETUP:-0}" = 1 ]; then $(PNPM) exec playwright install --with-deps chromium; fi
+	@set -eu; \
+	previous=$$($(COMPOSE) exec -T api printenv HL_PUBLIC_RUNS); \
+	trap 'HL_PUBLIC_RUNS="$$previous" $(COMPOSE) up --detach --no-build --wait api dispatcher web' EXIT; \
+	HL_PUBLIC_RUNS=1 $(COMPOSE) up --detach --no-build --wait api dispatcher web; \
+	$(MAKE) demo-fixture test-e2e
+
+ENV ?= staging
+deploy-check:
+	uv run --locked python -m scripts.deploy_check --env "$(ENV)" \
+		$(if $(DEPLOY_CONFIG),--config "$(DEPLOY_CONFIG)") \
+		$(if $(DEPLOY_OUTPUT),--output "$(DEPLOY_OUTPUT)") \
+		$(if $(filter 1,$(VERIFY_REMOTE)),--verify-remote)
+
+export BASE_URL MAX_SPEND_MICRO_USD
+smoke-hosted:
+	uv run --locked python -m scripts.hosted_smoke
+
+live-smoke:
+	uv run --locked python -m scripts.live_checks smoke
+
+live-trial:
+	uv run --locked python -m scripts.live_checks trial

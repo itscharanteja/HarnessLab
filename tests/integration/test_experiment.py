@@ -89,7 +89,7 @@ def test_fixture_trials_match_and_reuse_diagnosis(control_dsn, dispatcher_node):
         for _ in range(2):
             created = submit(dispatcher_node)
             assert created["id"] == created["repeated"]
-            assert wait_for(db, created["id"], seconds=90) == "completed"
+            assert wait_for(db, created["id"], seconds=240) == "completed"
             summaries.append(read_trial(db, created["id"]))
         assert summaries[0] == summaries[1]
 

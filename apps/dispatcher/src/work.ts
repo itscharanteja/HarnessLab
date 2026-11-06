@@ -510,7 +510,7 @@ export async function fail(pool: ControlPool, lease: Lease, code: string) {
 }
 
 export async function reclaim(pool: ControlPool) {
-  await transaction(pool, async (db) => {
+  return transaction(pool, async (db) => {
     const {
       rows: [item],
     } = await db.query<WorkRow>(
@@ -518,6 +518,7 @@ export async function reclaim(pool: ControlPool) {
          ORDER BY lease_until LIMIT 1 FOR UPDATE SKIP LOCKED`,
     );
     if (item) await failOrRetry(db, item, "lease_expired");
+    return item?.id ?? null;
   });
 }
 

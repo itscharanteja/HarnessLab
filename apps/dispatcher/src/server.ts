@@ -5,6 +5,7 @@ import { accepts } from "@harnesslab/schemas/validate";
 import { Queue, Worker } from "bullmq";
 import Fastify from "fastify";
 import { expirePublicTrials, registerApiCommands } from "./api-commands.ts";
+import { registerOps } from "./ops.ts";
 import { registerCheckpoints } from "./checkpoints.ts";
 import {
   deliver,
@@ -54,7 +55,7 @@ const services = {
   ),
 };
 const pool = controlPool(dsn);
-const app = Fastify({ logger: true });
+const app = Fastify({ logger: true, disableRequestLogging: true });
 const queue = new Queue<QueueReference>(QUEUE_NAME, {
   connection: {
     ...connection,
@@ -97,7 +98,12 @@ const poll = setInterval(() => {
   if (polling) return;
   polling = (async () => {
     await expirePublicTrials(pool);
-    await reconcile(pool, queue);
+    const reclaimed = await reconcile(pool, queue);
+    if (reclaimed)
+      app.log.warn(
+        { event: "lease_reclaimed", work_id: reclaimed },
+        "Expired work lease reclaimed",
+      );
     await relay(pool, queue);
     warned = false;
   })()
@@ -119,6 +125,7 @@ registerProbes(app, async () => {
 });
 registerCheckpoints(app, pool);
 registerApiCommands(app, pool, prompts);
+registerOps(app, pool);
 app.addHook("onClose", async () => {
   clearInterval(poll);
   await polling;

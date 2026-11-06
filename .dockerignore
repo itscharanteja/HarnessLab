@@ -44,3 +44,4 @@
 !apps/web/app/api/**
 !apps/web/app/**/*.tsx
 !apps/web/app/*.css
+!scripts/holdout_ledger.py
