@@ -1,0 +1,1393 @@
+[
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d01, How many distinct orders had a captured payment during August 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/schema_discovery/01",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d02, How many distinct orders had a captured payment during November 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/schema_discovery/02",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d03, How many distinct orders had a captured payment during February 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/schema_discovery/03",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d04, How many distinct orders had a captured payment during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/schema_discovery/04",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d05, How many distinct orders had a captured payment during December 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/schema_discovery/05",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d06, How many distinct orders had a captured payment during February 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/schema_discovery/06",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d01, How many distinct orders had a captured payment during February 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/schema_discovery/07",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d02, How many distinct orders had a captured payment during December 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/schema_discovery/08",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d03, How many distinct orders had a captured payment during December 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/schema_discovery/09",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "schema_discovery",
+      "output_keys": [
+        { "key": "paid_order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d04, How many distinct orders had a captured payment during March 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/schema_discovery/10",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d05, For customers in North, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/multi_step_analytics/01",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d06, For customers in South, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/multi_step_analytics/02",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d01, For customers in East, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/multi_step_analytics/03",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d02, For customers in East, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/multi_step_analytics/04",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d03, For customers in South, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/multi_step_analytics/05",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d04, For customers in South, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/multi_step_analytics/06",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d05, For customers in East, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/multi_step_analytics/07",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d06, For customers in West, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/multi_step_analytics/08",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d01, For customers in North, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/multi_step_analytics/09",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d02, For customers in South, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/multi_step_analytics/10",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d03, For customers in North, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/multi_step_analytics/11",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d04, For customers in West, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/multi_step_analytics/12",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "multi_step_analytics",
+      "output_keys": [
+        {
+          "key": "sep_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "oct_net_receipts",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "sep_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "oct_paid_order_count",
+          "unit": "count",
+          "value_type": "integer"
+        },
+        {
+          "key": "volume_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        {
+          "key": "average_receipt_effect",
+          "unit": "usd_cents",
+          "value_type": "decimal"
+        },
+        { "key": "refund_effect", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d05, For customers in South, reconcile September to October 2025 net receipts in USD cents. Give each month's net receipts and paid-order count, and the signed volume, average receipt per paid order, and refund effects in USD cents.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/multi_step_analytics/13",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d06, Which invoice IDs have duplicate captured payments in October 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/data_inconsistencies/01",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d01, Which invoice IDs have duplicate captured payments in September 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/data_inconsistencies/02",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d02, Which invoice IDs have duplicate captured payments in September 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/data_inconsistencies/03",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d03, Which invoice IDs have duplicate captured payments in October 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/data_inconsistencies/04",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d04, Which invoice IDs have duplicate captured payments in October 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/data_inconsistencies/05",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d05, Which invoice IDs have duplicate captured payments in October 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/data_inconsistencies/06",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d06, Which invoice IDs have duplicate captured payments in September 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/data_inconsistencies/07",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d01, Which invoice IDs have duplicate captured payments in October 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/data_inconsistencies/08",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d02, Which invoice IDs have duplicate captured payments in October 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/data_inconsistencies/09",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "data_inconsistencies",
+      "output_keys": [
+        {
+          "key": "invoice_ids",
+          "unit": "identifier",
+          "value_type": "integer_set"
+        }
+      ],
+      "prompt": "For business snapshot d03, Which invoice IDs have duplicate captured payments in September 2025? Treat payments with the same invoice, capture time, amount and method as duplicates.",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/data_inconsistencies/10",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d04, What were net receipts in USD cents during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/tool_failures/01",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d05, What were net receipts in USD cents during October 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/tool_failures/02",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d06, What were net receipts in USD cents during October 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/tool_failures/03",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d01, What were net receipts in USD cents during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/tool_failures/04",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d02, What were net receipts in USD cents during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/tool_failures/05",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d03, What were net receipts in USD cents during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/tool_failures/06",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d04, What were net receipts in USD cents during October 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/tool_failures/07",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d05, What were net receipts in USD cents during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/tool_failures/08",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d06, What were net receipts in USD cents during September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/tool_failures/09",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": {
+      "kind": "timeout",
+      "match": "first_eligible_sql",
+      "tool": "execute_readonly_sql"
+    },
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "tool_failures",
+      "output_keys": [
+        { "key": "net_receipts", "unit": "usd_cents", "value_type": "decimal" }
+      ],
+      "prompt": "For business snapshot d01, What were net receipts in USD cents during October 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/tool_failures/10",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d02, How much net revenue did we earn from customers in East?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/ambiguous_requests/01",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d03, How much net revenue did we earn from customers in South?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/ambiguous_requests/02",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d04, How much net revenue did we earn from customers in West?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/ambiguous_requests/03",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d05, How much net revenue did we earn from customers in East?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/ambiguous_requests/04",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d06, How much net revenue did we earn from customers in East?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/ambiguous_requests/05",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d01, How much net revenue did we earn from customers in North?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/ambiguous_requests/06",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [
+        "period",
+        "metric_basis",
+        "cohort",
+        "region"
+      ],
+      "category": "ambiguous_requests",
+      "output_keys": [],
+      "prompt": "For business snapshot d02, How much net revenue did we earn from customers in West?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/ambiguous_requests/07",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d03, How many open orders were placed in May 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/efficiency/01",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d04, How many cancelled orders were placed in March 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/efficiency/02",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d05, How many cancelled orders were placed in August 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/efficiency/03",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d06, How many paid orders were placed in March 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/efficiency/04",
+      "variant_id": "d06"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d01, How many paid orders were placed in March 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d01/efficiency/05",
+      "variant_id": "d01"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d02, How many paid orders were placed in September 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d02/efficiency/06",
+      "variant_id": "d02"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d03, How many paid orders were placed in June 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d03/efficiency/07",
+      "variant_id": "d03"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d04, How many open orders were placed in November 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d04/efficiency/08",
+      "variant_id": "d04"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d05, How many open orders were placed in October 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d05/efficiency/09",
+      "variant_id": "d05"
+    }
+  },
+  {
+    "fault": null,
+    "task": {
+      "allowed_clarification_fields": [],
+      "category": "efficiency",
+      "output_keys": [
+        { "key": "order_count", "unit": "count", "value_type": "integer" }
+      ],
+      "prompt": "For business snapshot d06, How many open orders were placed in December 2025?",
+      "schema_version": 1,
+      "split": "dev",
+      "task_key": "synthetic-business-v1/dev/d06/efficiency/10",
+      "variant_id": "d06"
+    }
+  }
+]

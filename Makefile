@@ -24,3 +24,19 @@ lint:
 
 typecheck:
 	$(PNPM) typecheck
+
+MODE ?= fixture
+export MODE SPLIT SEED_FILE OUT_DIR
+
+.PHONY: benchmark-generate benchmark-seed benchmark-verify
+benchmark-generate:
+	@if [ "$$MODE" = fixture ] && { [ -z "$$SPLIT" ] || [ "$$SPLIT" = holdout ]; }; then \
+		$(COMPOSE) --profile holdout-fixture up --detach --wait holdout-db; \
+	fi
+	uv run --locked python -m benchmarks.generators.cli generate
+
+benchmark-seed:
+	uv run --locked python -m benchmarks.generators.cli seed
+
+benchmark-verify:
+	uv run --locked python -m benchmarks.generators.cli verify

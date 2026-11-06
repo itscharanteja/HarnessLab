@@ -1,0 +1,527 @@
+{
+  "dataset_bundle_digest": "9bc6f0bdcf6ee94da3639235b70ea6f53c5bf4faf1f72e49a5b3292ccd7f856d",
+  "dataset_version": "synthetic-business-v1",
+  "fixture": true,
+  "generator_digest": "91c3525484911e466d77db1eb2488abf52aebb50e7a0c5be956c54543f630d5c",
+  "generator_revision": "1",
+  "manifest_digest": "0d56e9c10f28d78fd0671ba794aab73001d13c04221d00efc57b4c8a71551a9f",
+  "prompt_bundle_digest": "f8e8d6fa38acb9dda513daa953febfa6e4cf4c72cb65144375b29c53a92a3800",
+  "reference_bundle_digest": "feea119cb1dd40f83d71df350a9537c882156f94177d505a6dbacd728be4ec83",
+  "schema_version": 1,
+  "seed_revision": "synthetic-development-v1",
+  "split": "dev",
+  "tasks": [
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/schema_discovery/01",
+      "input_hash": "1000ce8053f6d407cbc7384c5cbeb521ba9ec35a920edc3d5297e0a72918ca5f",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/schema_discovery/02",
+      "input_hash": "5bd910c9d8db99779af946bdce9c018d48487d226f4228335ad0b56b4e65bdd1",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/schema_discovery/03",
+      "input_hash": "e058cd58b75ab54fec710dedf85e69ed282a3d3d87d02d179671644ca7df8d9d",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/schema_discovery/04",
+      "input_hash": "a6a9ea193ef1d142c53214d7977964a497c5b79c7735a5f55c75b0cce1ddd295",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/schema_discovery/05",
+      "input_hash": "33c99a26286d6c0e6376592f5df5d4b3ebbd95a3d0cdaf74a647a52f28c96d5f",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/schema_discovery/06",
+      "input_hash": "2704c3b7b92ef66686c13ba7af29cae7e536923531db18bf5ea1c5edcfac23f3",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/schema_discovery/07",
+      "input_hash": "773db29152c68073654903b1dc28aab25ee482d643d5287e9920b79a272b1973",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/schema_discovery/08",
+      "input_hash": "d0775b78172e6f26a135b42957e3ebf25d60348b211aeeea102312a9313c47fe",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/schema_discovery/09",
+      "input_hash": "cab3f4896710c8f29efd2e9933fee2172807bbec37baba4ff0cb823e4561ab4a",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "schema_discovery",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/schema_discovery/10",
+      "input_hash": "2da411464db2dabccf4e6206faae9bb4a01fb749c6d031a01fb9e95ec1bec762",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/multi_step_analytics/01",
+      "input_hash": "eb8648b19af306a8cad137252d3c99c5e547bdb38273e2ec2bc79f231d471644",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/multi_step_analytics/02",
+      "input_hash": "25d7cfd974e75d3d6dd40365aad828fb0dbd80cc75057c4dddb1910547c9e2d9",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/multi_step_analytics/03",
+      "input_hash": "dcd9a4c8350ebba9252933291869fb574dcf9b3eb375ef500c4150e1ad26dd47",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/multi_step_analytics/04",
+      "input_hash": "f8582bc0d2dbf4ec9c9dd4dcb728a71c782a70065975428dc3ace65c761d3d8d",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/multi_step_analytics/05",
+      "input_hash": "ce4aac412f56d5196d618ea53ac18cae4838373de251196f1c443de836b598dd",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/multi_step_analytics/06",
+      "input_hash": "778200ae6067a3e324340745a033cc2253cfa109554bd3a55b097dde96874179",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/multi_step_analytics/07",
+      "input_hash": "794281691046365b5629359e27ae923f5d707467a2fa4a5076c6a96d2d9ccf77",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/multi_step_analytics/08",
+      "input_hash": "99447b8f8b701ac5fed6ac02b0cd9f4b67746d01b7c6d063bd69f76737f65e09",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/multi_step_analytics/09",
+      "input_hash": "0f1223f8b94fe798d4e2d9fdd0d740a03adf9ab57185bdc66e7d6f80a52511dc",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/multi_step_analytics/10",
+      "input_hash": "a81f567e44ad237fb9a53427f454145064276d1468aa514e2651da83ea1b2791",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/multi_step_analytics/11",
+      "input_hash": "ead532a81f16dcf13fd50768c95a9c05d05f7c4f31ae4d61984a578bbcef77c1",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/multi_step_analytics/12",
+      "input_hash": "080fd8a4c42d76ac4ec435c8e08ca4bfd7d56fb2262d4bce67679007a9860b98",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "multi_step_analytics",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/multi_step_analytics/13",
+      "input_hash": "e35fca3e35381bff5b7c009b54dac9f15e5df63014c78cf5aa160597cfc11a1e",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/data_inconsistencies/01",
+      "input_hash": "e5bad3572949d33062a2563a8152d56edd8e7a6927f503f6626b3576075e55ff",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/data_inconsistencies/02",
+      "input_hash": "58664abcef2f0abf26c1a39edb5d9e8d1a24ad15cca9b0f5436acd143c114614",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/data_inconsistencies/03",
+      "input_hash": "d691b177ada48ee0e89c6aaa5d86a78d6b4781fe97fe89564ce0f9f057c6cb34",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/data_inconsistencies/04",
+      "input_hash": "73a5b8ea300cc36f600d977d5aafd66de80491a47aa3bfc8095e928ba3ce136a",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/data_inconsistencies/05",
+      "input_hash": "b27f102ba6adbcf3e0afce5eff10cf0a9abc8bc068589bef78e065953848e305",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/data_inconsistencies/06",
+      "input_hash": "8f8483df63b1ea7582b5f45955954b4b950f44b9e23b39c31922c6520854b40f",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/data_inconsistencies/07",
+      "input_hash": "dbf74f1318d4a383e12a628a62817af597b10800d29ddaffdcba7f53ef42e1ae",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/data_inconsistencies/08",
+      "input_hash": "a312d804140e098582cafc7d611da4bc5541f79fca5dbdbb7c5f09c4c97c6b32",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/data_inconsistencies/09",
+      "input_hash": "7fdba41a4f8a2679d51a41119052cdf7bf1825f3676b4c12fb63c2a86a3b6f9a",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "data_inconsistencies",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/data_inconsistencies/10",
+      "input_hash": "aff6afbb6b94dd6377ea4685498a4cec2dc5c5729d80cc9cc4b6a43476d4acce",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d04/tool_failures/01",
+      "input_hash": "a4dc6f099085e77f130a4198ad3f0b4f0700a86c9a3a3ffb62f98fd962bfcd0a",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d05/tool_failures/02",
+      "input_hash": "6e8e1083aec4513b410d68b8eb42f2febdbe5f361cf6260ee09cd23740f93ccb",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d06/tool_failures/03",
+      "input_hash": "18cbbd5f956d5a8f33c868eaf00669e4d56d7ab97a0a009df6f99c8e47b416d8",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d01/tool_failures/04",
+      "input_hash": "be821c5098bd279c62a623428b59727283cf894823370a332641c0e170189cee",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d02/tool_failures/05",
+      "input_hash": "57d551e6886761baebbc2bcf4e4db4febb91d162c8ccaad3cebc549ea9c0f94b",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d03/tool_failures/06",
+      "input_hash": "1b275c047ccff8588d799b9e8d9789e2b1f3c514630819bec7d5c93c9158f9cf",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d04/tool_failures/07",
+      "input_hash": "94f06661a272f0d065e252f098a3419dddc9a33ff54cbd660712d13505b22f6c",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d05/tool_failures/08",
+      "input_hash": "8f19b2d32809896621be9899a1e4b230e79702eaae990442de0f85c3a8b4aeb3",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d06/tool_failures/09",
+      "input_hash": "71107de3d7e84fc340aa9946541a83ca232ca0e7668bcb7eb14acabdb4752885",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "tool_failures",
+      "fault_digest": "92ca8e9696acf3d99a1001f6afd1f852655149a9df7deba7d86ce8ff493078b4",
+      "id": "synthetic-business-v1/dev/d01/tool_failures/10",
+      "input_hash": "17525b1f219885bbb4fb74c18b79e180ca62ca844ffde283d8d54c7695184a86",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/ambiguous_requests/01",
+      "input_hash": "89ed455e25de4e023c8657ce3be5c7ab0c9ed04061a8474717c03efb82026a50",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/ambiguous_requests/02",
+      "input_hash": "264dfa743fd3bb04b3cf036975a632dbcc02dead07a1a2c10cd6b23e304807a8",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/ambiguous_requests/03",
+      "input_hash": "22045f703ac31ee861c3d01e299433affcf7701f93312a542866e0f3a32a9970",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/ambiguous_requests/04",
+      "input_hash": "e3e3874dca9bc464e474886b6fcc1611d8fff670a2de7f0db93d82077ffb6237",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/ambiguous_requests/05",
+      "input_hash": "a355b580f336e7462cf06cc0413b574e8859bdbb8ff748d3d18151ad60844ab6",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/ambiguous_requests/06",
+      "input_hash": "b7cc8b003f30dae7d06048d4b9b25581d4c8bd1f793b49f0e87f9818ad2f29a2",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "ambiguous_requests",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/ambiguous_requests/07",
+      "input_hash": "188f581cb9e4072b4260b69a3e005a3ede4ed686963264aec1034f19abbbc4eb",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/efficiency/01",
+      "input_hash": "cedeb9a5b698c000fca45a36b6ecf37039a5880fae74577b42d859d15d5da574",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/efficiency/02",
+      "input_hash": "1ac4c9eb39af43819fa449a4d6e2bfebe7b8c184b036aa8711c7627582f9db0b",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/efficiency/03",
+      "input_hash": "b1d05330ff48400a1e11f56ffee50c6ffe7d2827f010ecb3ae79136875b09260",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/efficiency/04",
+      "input_hash": "e56e90f5b4648b3148e6f34d4837d52c8b7cc433be5bac70561fc95abb57a812",
+      "split": "dev",
+      "variant_id": "d06"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d01/efficiency/05",
+      "input_hash": "53542f7aa5fb44ee649c7506b439fbdae323364520228a3189b72a6943efbe5c",
+      "split": "dev",
+      "variant_id": "d01"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d02/efficiency/06",
+      "input_hash": "c7817a37da6440a1d0e445f1bd62b853724e0f9621327d7ec7a4b78eeadefb90",
+      "split": "dev",
+      "variant_id": "d02"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d03/efficiency/07",
+      "input_hash": "711f402060dbec0100b563b69b1c208e5fe0cafce3215398611184a0287318db",
+      "split": "dev",
+      "variant_id": "d03"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d04/efficiency/08",
+      "input_hash": "0a311d6636966a09fcef91e6ab2e9aac32ae416b76ef2e0d44dc958ef0b7c770",
+      "split": "dev",
+      "variant_id": "d04"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d05/efficiency/09",
+      "input_hash": "5651cf447da8ba7a2d836835e3043d73657c4931514e15b2bbff0537e0bb3263",
+      "split": "dev",
+      "variant_id": "d05"
+    },
+    {
+      "category": "efficiency",
+      "fault_digest": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "id": "synthetic-business-v1/dev/d06/efficiency/10",
+      "input_hash": "f835ce04446cf5fcf6efbdadf13e247879bcc5c3b89d851c369cca3fa9ab2e32",
+      "split": "dev",
+      "variant_id": "d06"
+    }
+  ],
+  "variants": [
+    {
+      "id": "d01",
+      "rows_digest": "05972240f5de2335a46b574b198f3600377a9986726ac55af0fa298b91933a3d",
+      "schema_revision": "synthetic-business-v1"
+    },
+    {
+      "id": "d02",
+      "rows_digest": "188aea3ac12aaa23d9f32e5cc29dfa32af6442dd9eb643cd7a1942e3f44638ed",
+      "schema_revision": "synthetic-business-v1"
+    },
+    {
+      "id": "d03",
+      "rows_digest": "ef74748d9e950881c51cba056040f72da7720daf33b27cdc3d4b024eac39d97f",
+      "schema_revision": "synthetic-business-v1"
+    },
+    {
+      "id": "d04",
+      "rows_digest": "97104b81510dfcca66bbbfbf14190186260e940cfb262e09d1369e45be18a7cb",
+      "schema_revision": "synthetic-business-v1"
+    },
+    {
+      "id": "d05",
+      "rows_digest": "c92411165a87fe4eaf74249fc31f194fa12f4dfd476328cad20132eba48115be",
+      "schema_revision": "synthetic-business-v1"
+    },
+    {
+      "id": "d06",
+      "rows_digest": "3c8812d5fb5e48ce48203c54aee55e86ce489000744537e0425ae9ae16e378c8",
+      "schema_revision": "synthetic-business-v1"
+    }
+  ]
+}

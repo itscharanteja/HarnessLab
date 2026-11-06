@@ -33,3 +33,25 @@ Vercel targets Node 22.x. Vercel manages its patch version, while `make bootstra
 Cloud Run images must include `linux/amd64`, with each service listening on its configured port and handling SIGTERM. [Cloud Run container contract](https://docs.cloud.google.com/run/docs/container-contract)
 
 Use a direct TLS connection for Supabase migrations and a direct or session-mode TLS connection for persistent services. The synthetic benchmark uses PostgreSQL 16 in a separate sandbox. [Supabase PostgreSQL connections](https://supabase.com/docs/guides/database/connecting-to-postgres)
+
+## Synthetic benchmark
+
+With the fixture stack running, generate, seed and verify the synthetic corpus.
+
+```sh
+make benchmark-generate MODE=fixture
+make benchmark-seed MODE=fixture
+make benchmark-verify MODE=fixture
+uv run pytest tests/integration/test_benchmark.py
+```
+
+Generation checks 120 tasks against independent PostgreSQL and Python references. It writes split-scoped, owner-only artifacts under `.artifacts/benchmark-fixture`. The holdout fixture uses a separate PostgreSQL instance on loopback port 55434 and a separate credential. Start it through the generator's Compose profile. The seed command creates read-only variant logins and saves their credentials separately from prompt and reference bundles. The verification command checks row, input and bundle digests after reload.
+
+For release validation or holdout generation, supply a private seed JSON file with `seed_revision` and three distinct `seeds`, an owner-only destination outside the repository, and the authorized split's `SANDBOX_SEED_DSN`. The generator checks references in rolled-back scratch schemas.
+
+```sh
+make benchmark-generate MODE=release SPLIT=validation SEED_FILE=/restricted/validation-seed.json OUT_DIR=/restricted/validation-release
+make benchmark-generate MODE=release SPLIT=holdout SEED_FILE=/restricted/holdout-seed.json OUT_DIR=/restricted/holdout-release
+```
+
+Install prompt and fault bundles in the authorized execution scope. Install the matching oracle only in the evaluator's private storage. Keep all holdout artifacts and credentials in the separate operator environment. Review the release manifest and record its digest before installation.

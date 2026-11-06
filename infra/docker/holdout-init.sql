@@ -1,0 +1,6 @@
+BEGIN;
+CREATE ROLE hl_holdout_seed LOGIN CREATEROLE PASSWORD 'fixture_holdout_seed';
+REVOKE ALL ON DATABASE harnesslab_holdout FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT CONNECT, CREATE ON DATABASE harnesslab_holdout TO hl_holdout_seed WITH GRANT OPTION;
+COMMIT;

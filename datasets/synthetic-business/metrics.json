@@ -1,0 +1,45 @@
+{
+  "catalog_version": "synthetic-business-v1",
+  "metrics": [
+    {
+      "metric_id": "gross_receipts",
+      "definition": "Sum captured payments by capture time. Duplicate captured payments remain in gross receipts.",
+      "unit": "usd_cents"
+    },
+    {
+      "metric_id": "net_receipts",
+      "definition": "Gross captured receipts minus refunds, with refunds attributed by their refund time.",
+      "unit": "usd_cents"
+    },
+    {
+      "metric_id": "paid_order_count",
+      "definition": "Count distinct orders with a captured payment in the requested period.",
+      "unit": "count"
+    },
+    {
+      "metric_id": "cohort_spend",
+      "definition": "Captured receipts during the spend period from customers who signed up during the cohort period.",
+      "unit": "usd_cents"
+    },
+    {
+      "metric_id": "active_subscriptions",
+      "definition": "A subscription is active if it started on or before the instant and its end time is absent or strictly later.",
+      "unit": "count"
+    },
+    {
+      "metric_id": "monthly_churn",
+      "definition": "Divide subscriptions active at the start that terminate during the month by subscriptions active at the start.",
+      "unit": "ratio"
+    },
+    {
+      "metric_id": "invoice_reconciliation",
+      "definition": "Compare the paid invoice total to captured payments on that invoice. Refunds are excluded from this comparison.",
+      "unit": "usd_cents"
+    },
+    {
+      "metric_id": "receipt_bridge",
+      "definition": "Decompose the change in net receipts into paid order volume, average gross receipts per paid order, and refunds. Average receipts per order combine pricing, product mix and payment effects.",
+      "unit": "usd_cents"
+    }
+  ]
+}

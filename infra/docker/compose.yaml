@@ -67,6 +67,35 @@ services:
       retries: 20
     networks: [sandbox, sandbox-cli]
 
+  holdout-db:
+    profiles: [holdout-fixture]
+    image: postgres:16-bookworm@sha256:5264710be20f409750ac6dc4e5706dcef929c87e241605463f0f9aefa932a8d9
+    environment:
+      POSTGRES_USER: hl_holdout_admin
+      POSTGRES_PASSWORD: fixture_holdout_admin
+      POSTGRES_DB: harnesslab_holdout
+    ports:
+      - "127.0.0.1:${HOLDOUT_DB_PORT:-55434}:5432"
+    volumes:
+      - holdout-data:/var/lib/postgresql/data
+      - ./holdout-init.sql:/docker-entrypoint-initdb.d/01-roles.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          "hl_holdout_admin",
+          "-d",
+          "harnesslab_holdout",
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [holdout-cli]
+
   redis:
     image: redis:7-bookworm@sha256:2e3eb11462c4e3759e6972678dd051d150ff54b1e60714b3c33b701260172a90
     command:
@@ -215,6 +244,7 @@ networks:
   edge: {}
   control-cli: {}
   sandbox-cli: {}
+  holdout-cli: {}
   control:
     internal: true
   sandbox:
@@ -225,4 +255,5 @@ networks:
 volumes:
   control-data:
   sandbox-data:
+  holdout-data:
   redis-data:
