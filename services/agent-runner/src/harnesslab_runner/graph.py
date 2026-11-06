@@ -573,20 +573,20 @@ def worker_graph(checkpointer=None):
     return graph.compile(checkpointer=checkpointer)
 
 
-def validate_request(request: dict):
+def validate_request(request: dict, *, operator_holdout=False):
     if not json_types(request) or not accepts("ExecuteTaskRequest", request):
         raise ValueError("Invalid execution request")
     task, manifest, config = request["task"], request["manifest"], request["harness"]
     _, split, variant, category, _ = task["task_key"].split("/")
     if (
-        split not in {"dev", "validation"}
+        split not in ({"holdout"} if operator_holdout else {"dev", "validation"})
         or split != task["split"]
         or variant != task["variant_id"]
         or category != task["category"]
         or manifest["task_key"] != task["task_key"]
         or manifest["task_input_hash"] != digest(task)
         or manifest["config_hash"] != digest(config)
-        or (manifest["stage"] == "validate") != (split == "validation")
+        or (manifest["stage"] == "validate") != (split in {"validation", "holdout"})
         or (request["fault"] is not None and task["category"] != "tool_failures")
     ):
         raise ValueError("Execution provenance mismatch")
@@ -600,8 +600,9 @@ async def execute(
     *,
     checkpointer: InMemorySaver | None = None,
     graph_events: list[dict] | None = None,
+    operator_holdout: bool = False,
 ) -> dict:
-    validate_request(request)
+    validate_request(request, operator_holdout=operator_holdout)
     manifest = request["manifest"]
     if model.mode != manifest["mode"] or (
         model.mode == "live" and model.settings != manifest["worker"]

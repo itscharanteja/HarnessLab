@@ -22,6 +22,7 @@ import {
 } from "./work.ts";
 
 import { propose } from "./propose.ts";
+import { compareTrial } from "./compare.ts";
 
 export const QUEUE_NAME = "harnesslab-work-v1";
 
@@ -182,6 +183,10 @@ export async function deliver(
       });
   }, 3000);
   try {
+    if (item.kind === "compare_and_advance") {
+      await compareTrial(pool, item, services, controller.signal);
+      return;
+    }
     if (item.kind === "analyze_and_propose") {
       await propose(pool, item, services, controller.signal);
       return;

@@ -276,6 +276,9 @@ export interface ContractCatalog {
   PairedMetrics: PairedMetrics;
   Interval: Interval;
   GateResult: GateResult;
+  ComparisonRun: ComparisonRun;
+  ComparisonCell: ComparisonCell;
+  CompareRequest: CompareRequest;
   EvaluationReport: EvaluationReport;
   QueueReference: QueueReference;
   HealthResponse: HealthResponse;
@@ -688,12 +691,50 @@ export interface GateResult {
   status: "passed" | "failed" | "unavailable";
   reason: OutcomeCode;
 }
+export interface ComparisonRun {
+  run_id: Uuid;
+  trace_digest: Digest | null;
+  complete: boolean;
+  success: boolean;
+  latency_ms: number;
+  tool_calls: number;
+  worker_cost_microusd: number;
+  invalid_sql_attempts: number;
+  sql_attempts: number;
+  recovered: boolean;
+  safety_violations: number;
+}
+export interface ComparisonCell {
+  task_key: TaskKey;
+  category: Category;
+  repeat: number;
+  recoverable_fault: boolean;
+  baseline: ComparisonRun | null;
+  candidate: ComparisonRun | null;
+}
+export interface CompareRequest {
+  schema_version: 1;
+  experiment_id: Uuid;
+  baseline_hash: Digest;
+  candidate_hash: Digest;
+  scope: "dev_fixture" | "dev_screen" | "validation" | "holdout";
+  mode: Mode;
+  manifest_digest: Digest;
+  roster_digest: Digest;
+  provenance_valid: boolean;
+  candidate_dev_safe: boolean;
+  seed: number;
+  /**
+   * @maxItems 90
+   */
+  cells: ComparisonCell[];
+}
 export interface EvaluationReport {
   schema_version: 1;
   experiment_id: Uuid;
   baseline_hash: Digest;
   candidate_hash: Digest;
-  scope: "dev_fixture" | "validation" | "holdout";
+  scope: "dev_fixture" | "dev_screen" | "validation" | "holdout";
   mode: Mode;
   policy_version: string;
   manifest_digest: Digest;

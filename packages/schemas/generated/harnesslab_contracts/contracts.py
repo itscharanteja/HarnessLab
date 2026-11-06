@@ -1085,10 +1085,58 @@ class GateResult(BaseModel):
     reason: OutcomeCode
 
 
+class ComparisonRun(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    run_id: Uuid
+    trace_digest: Digest | None
+    complete: StrictBool
+    success: StrictBool
+    latency_ms: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    tool_calls: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    worker_cost_microusd: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    invalid_sql_attempts: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    sql_attempts: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    recovered: StrictBool
+    safety_violations: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+
+
+class ComparisonCell(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    task_key: TaskKey
+    category: Category
+    repeat: Annotated[StrictInt, Field(ge=1, le=3)]
+    recoverable_fault: StrictBool
+    baseline: ComparisonRun | None
+    candidate: ComparisonRun | None
+
+
 class Scope(StrEnum):
     dev_fixture = 'dev_fixture'
+    dev_screen = 'dev_screen'
     validation = 'validation'
     holdout = 'holdout'
+
+
+class CompareRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal[1]
+    experiment_id: Uuid
+    baseline_hash: Digest
+    candidate_hash: Digest
+    scope: Scope
+    mode: Mode
+    manifest_digest: Digest
+    roster_digest: Digest
+    provenance_valid: StrictBool
+    candidate_dev_safe: StrictBool
+    seed: Annotated[StrictInt, Field(ge=0, le=9007199254740991)]
+    cells: Annotated[list[ComparisonCell], Field(max_length=90)]
 
 
 class Category1(BaseModel):
@@ -1627,6 +1675,9 @@ class ContractCatalog(BaseModel):
     PairedMetrics_1: Annotated[PairedMetrics, Field(alias='PairedMetrics')]
     Interval_1: Annotated[Interval, Field(alias='Interval')]
     GateResult_1: Annotated[GateResult, Field(alias='GateResult')]
+    ComparisonRun_1: Annotated[ComparisonRun, Field(alias='ComparisonRun')]
+    ComparisonCell_1: Annotated[ComparisonCell, Field(alias='ComparisonCell')]
+    CompareRequest_1: Annotated[CompareRequest, Field(alias='CompareRequest')]
     EvaluationReport_1: Annotated[EvaluationReport, Field(alias='EvaluationReport')]
     QueueReference_1: Annotated[QueueReference, Field(alias='QueueReference')]
     HealthResponse_1: Annotated[HealthResponse, Field(alias='HealthResponse')]

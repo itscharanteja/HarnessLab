@@ -212,6 +212,9 @@
     "GateResult": {
       "$ref": "#/$defs/GateResult"
     },
+    "ComparisonRun": { "$ref": "#/$defs/ComparisonRun" },
+    "ComparisonCell": { "$ref": "#/$defs/ComparisonCell" },
+    "CompareRequest": { "$ref": "#/$defs/CompareRequest" },
     "EvaluationReport": {
       "$ref": "#/$defs/EvaluationReport"
     },
@@ -342,6 +345,9 @@
     "PairedMetrics",
     "Interval",
     "GateResult",
+    "ComparisonRun",
+    "ComparisonCell",
+    "CompareRequest",
     "EvaluationReport",
     "QueueReference",
     "HealthResponse",
@@ -2681,6 +2687,189 @@
       },
       "required": ["gate", "status", "reason"]
     },
+    "ComparisonRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "trace_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "tool_calls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "worker_cost_microusd": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "invalid_sql_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "sql_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "recovered": {
+          "type": "boolean"
+        },
+        "safety_violations": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "run_id",
+        "trace_digest",
+        "complete",
+        "success",
+        "latency_ms",
+        "tool_calls",
+        "worker_cost_microusd",
+        "invalid_sql_attempts",
+        "sql_attempts",
+        "recovered",
+        "safety_violations"
+      ]
+    },
+    "ComparisonCell": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_key": {
+          "$ref": "#/$defs/TaskKey"
+        },
+        "category": {
+          "$ref": "#/$defs/Category"
+        },
+        "repeat": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "recoverable_fault": {
+          "type": "boolean"
+        },
+        "baseline": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonRun"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "task_key",
+        "category",
+        "repeat",
+        "recoverable_fault",
+        "baseline",
+        "candidate"
+      ]
+    },
+    "CompareRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "experiment_id": {
+          "$ref": "#/$defs/Uuid"
+        },
+        "baseline_hash": {
+          "$ref": "#/$defs/Digest"
+        },
+        "candidate_hash": {
+          "$ref": "#/$defs/Digest"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["dev_fixture", "dev_screen", "validation", "holdout"]
+        },
+        "mode": {
+          "$ref": "#/$defs/Mode"
+        },
+        "manifest_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "roster_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "provenance_valid": {
+          "type": "boolean"
+        },
+        "candidate_dev_safe": {
+          "type": "boolean"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ComparisonCell"
+          },
+          "maxItems": 90
+        }
+      },
+      "required": [
+        "schema_version",
+        "experiment_id",
+        "baseline_hash",
+        "candidate_hash",
+        "scope",
+        "mode",
+        "manifest_digest",
+        "roster_digest",
+        "provenance_valid",
+        "candidate_dev_safe",
+        "seed",
+        "cells"
+      ]
+    },
     "EvaluationReport": {
       "type": "object",
       "additionalProperties": false,
@@ -2700,7 +2889,7 @@
         },
         "scope": {
           "type": "string",
-          "enum": ["dev_fixture", "validation", "holdout"]
+          "enum": ["dev_fixture", "dev_screen", "validation", "holdout"]
         },
         "mode": {
           "$ref": "#/$defs/Mode"

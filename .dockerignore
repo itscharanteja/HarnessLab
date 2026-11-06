@@ -38,3 +38,5 @@
 !datasets/
 !datasets/synthetic-business/
 !datasets/synthetic-business/metrics.json
+!scripts/
+!scripts/holdout_job.py

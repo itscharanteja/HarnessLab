@@ -66,6 +66,20 @@ def read_trial(db, experiment):
         """,
         (experiment,),
     ).fetchone() == (1,)
+    comparisons = db.execute(
+        """
+        SELECT er.metrics_and_gates FROM hl.evaluation_reports er
+        JOIN hl.evaluation_evidence proof ON proof.report_id=er.id
+        WHERE er.experiment_id=%s AND er.scope='dev_fixture'
+        """,
+        (experiment,),
+    ).fetchall()
+    assert len(comparisons) == 2
+    for (comparison,) in comparisons:
+        assert comparison["complete"] and not comparison["winner"]
+        assert comparison["baseline"]["successes"] == 2
+        assert comparison["candidate"]["successes"] == 4
+        assert comparison["gates"][0]["reason"] == "ineligible_fixture"
     return [(row["hash"], row["successes"], row["calls"]) for row in screen["arms"]]
 
 

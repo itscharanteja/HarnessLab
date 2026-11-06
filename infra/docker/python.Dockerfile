@@ -22,3 +22,14 @@ USER 65534:65534
 FROM runtime AS runner
 COPY datasets/synthetic-business/metrics.json /workspace/metric-catalog.json
 ENV HL_METRIC_CATALOG=/workspace/metric-catalog.json
+
+FROM build AS holdout-build
+COPY services/evaluator/src/harnesslab_eval/ services/evaluator/src/harnesslab_eval/
+RUN uv sync --locked --no-dev --no-editable --package harnesslab-runner --package harnesslab-eval
+
+FROM runtime AS holdout
+WORKDIR /workspace
+COPY --from=holdout-build /workspace/.venv /workspace/.venv
+COPY datasets/synthetic-business/metrics.json /workspace/datasets/synthetic-business/metrics.json
+COPY scripts/holdout_job.py /workspace/holdout_job.py
+ENTRYPOINT ["python", "/workspace/holdout_job.py"]

@@ -36,8 +36,8 @@ const DIAGNOSIS_COUNTS: Record<TaskInput["category"], number> = {
   ambiguous_requests: 3,
   efficiency: 5,
 };
-type Stage = "diagnose" | "screen" | "validate";
-type Meta = {
+export type Stage = "diagnose" | "screen" | "validate";
+export type Meta = {
   id: string;
   category: TaskInput["category"];
   split: "dev" | "validation";
@@ -47,8 +47,8 @@ type Meta = {
   dataset_digest: string;
   benchmark_digest: string;
 };
-type Arm = { harness_id: string; hash: string; role: string };
-type Cell = {
+export type Arm = { harness_id: string; hash: string; role: string };
+export type Cell = {
   task_key: string;
   repeat: number;
   harness_id: string;
@@ -129,7 +129,7 @@ function metadata(bundle: Awaited<ReturnType<typeof promptBundle>>): Meta[] {
   });
 }
 
-async function readArms(db: ControlClient, id: string) {
+export async function readArms(db: ControlClient, id: string) {
   const { rows } = await db.query<Arm>(
     `SELECT a.harness_id,a.role,v.content_sha256 AS hash
     FROM hl.experiment_arms a JOIN hl.harness_versions v ON v.id=a.harness_id
@@ -554,7 +554,12 @@ export async function closeTrial(
     schema_version: 1,
     mode: exp.mode,
     reason,
-    eligibility: exp.mode === "fixture" ? "ineligible_fixture" : "pending_gate",
+    eligibility:
+      exp.mode === "fixture"
+        ? "ineligible_fixture"
+        : reason === "eligible_for_review"
+          ? "eligible_for_review"
+          : "ineligible",
     comparisons,
   };
   await db.query(
@@ -566,6 +571,25 @@ export async function closeTrial(
     `UPDATE hl.experiments SET stage='report',status=$2,completed_at=clock_timestamp()
     WHERE id=$1 AND status IN ('queued','running')`,
     [id, failed ? "failed" : "completed"],
+  );
+}
+
+async function queueComparison(
+  db: ControlClient,
+  id: string,
+  exp: TrialExperiment,
+  reason: string,
+  failed = false,
+) {
+  const key = `compare_and_advance/${reason}/${failed ? "failed" : "completed"}`;
+  await enqueue(
+    db,
+    id,
+    key,
+    "compare_and_advance",
+    null,
+    "paired-gate-v1",
+    digest({ id, stage: exp.stage, key }),
   );
 }
 
@@ -581,8 +605,11 @@ export async function advanceTrial(
   const stage = exp.stage as Stage;
   const { scores, complete } = await stageResults(db, id, stage);
   if (scores.some((row) => row.result_status === "pending")) return;
-  if (!complete || exp.budget_exhausted)
-    return closeTrial(db, id, exp, "incomplete_roster", true);
+  if (!complete || exp.budget_exhausted) {
+    if (stage === "diagnose")
+      return closeTrial(db, id, exp, "incomplete_roster", true);
+    return queueComparison(db, id, exp, "incomplete_roster", true);
+  }
   const trial = exp.manifest.trial!;
   if (stage === "diagnose") {
     if (
@@ -610,14 +637,14 @@ export async function advanceTrial(
       [id, finalists.map((arm) => arm.harness_id)],
     );
     if (exp.mode === "fixture")
-      return closeTrial(
+      return queueComparison(
         db,
         id,
         exp,
         finalists.length ? "ineligible_fixture" : "no_candidate_survived",
       );
     if (!finalists.length)
-      return closeTrial(db, id, exp, "no_candidate_survived");
+      return queueComparison(db, id, exp, "no_candidate_survived");
     if (
       !(await schedule(
         db,
@@ -628,9 +655,9 @@ export async function advanceTrial(
         trial.validate,
       ))
     )
-      return closeTrial(db, id, exp, "validation_budget", true);
+      return queueComparison(db, id, exp, "validation_budget", true);
   } else {
-    await closeTrial(db, id, exp, "awaiting_gate_evaluation");
+    await queueComparison(db, id, exp, "validation_compared");
   }
 }
 

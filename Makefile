@@ -73,3 +73,10 @@ dispatch-fixture:
 .PHONY: optimize-fixture
 optimize-fixture:
 	$(COMPOSE) exec -T dispatcher node apps/dispatcher/src/cli.ts --trial
+
+.PHONY: gates-check holdout-run
+gates-check:
+	uv run --locked pytest -q tests/regression/test_gates.py
+
+holdout-run:
+	uv run --locked python scripts/holdout_job.py --mode "$(MODE)" $(HOLDOUT_ARGS)

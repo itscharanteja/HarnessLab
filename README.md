@@ -99,3 +99,24 @@ uv run --locked pytest -q tests/integration/test_graph_persistence.py
 The command prints an experiment ID and its stored development report. The dispatcher records the diagnosis, proposal decisions, matched screening roster, grades, and optimizer usage. Screening reuses the diagnosis baseline cells. Fixture reports are ineligible for activation.
 
 Both graphs use the dispatcher's lease-scoped checkpoint interface. The optimizer resumes from validated suggestions. A worker can replay a completed envelope after a lost response. A worker interrupted before its MCP evidence ledger is complete uses the existing bounded fixture retry with the original deadline. The development corpus is shared across fixture and live worker modes. Live validation requires a separate operator-approved release bundle.
+
+## Evaluation, review and isolated holdout
+
+```sh
+make db-migrate
+make gates-check
+uv run --locked pytest -q tests/security/test_artifact_access.py tests/regression/test_promotion.py
+make holdout-run MODE=fixture
+```
+
+The fixture holdout uses the generated, seeded holdout bundle and the separate local PostgreSQL instance. It writes an owner-only aggregate report and resume ledger under `.artifacts/holdout-operator`. The fixture exercises the matched execution and grading paths with a scripted adapter and zero spend. Comparisons of development fixtures cannot promote.
+
+The dispatcher stores versioned reports and matched trace references. Review commands use the dedicated `hl_promoter` database role after operator authentication. Production activation requires a qualifying live validation winner, its reviewed report digest, and the expected channel revision. Rejection records a reason, and rollback appends a new decision and advances the revision.
+
+For an authorized release, run the separate holdout job with an explicitly nominated pair and the signed-off holdout manifest digest. Install and verify the private bundle and seed the isolated sandbox before running. Provide the holdout-only provider credential as `HL_HOLDOUT_API_KEY`, the isolated database name as `HL_HOLDOUT_SANDBOX_DATABASE`, and the deployed image digest as `HL_HOLDOUT_IMAGE_DIGEST`. Use one persistent, owner-only work directory across retries and release IDs. The ledger in that directory prevents reuse of a revealed holdout with a different pair.
+
+```sh
+make holdout-run MODE=release HOLDOUT_ARGS='--baseline /restricted/baseline.yaml --candidate /restricted/candidate.yaml --manifest-digest APPROVED_DIGEST --release-id RELEASE_ID --spend-cap APPROVED_MICROUSD --bundle /restricted/holdout --runtime-map /restricted/runtime.json --work-dir /restricted/holdout-ledger --worker-profile /restricted/worker.json --price-profile /restricted/price.json'
+```
+
+The container target for this job is `holdout` in `infra/docker/python.Dockerfile`, built with `SERVICE_PATH=agent-runner` and `SERVICE_PACKAGE=harnesslab-runner`. Its entry point accepts the same options, starting with `--mode release`. Mount private artifacts and runtime credentials into the job only. Per-task envelopes stay in the restricted ledger.

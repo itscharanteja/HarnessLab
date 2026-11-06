@@ -36,6 +36,7 @@ type WorkRow = {
   id: string;
   experiment_id: string;
   kind: WorkKind;
+  work_key: string;
   run_id: string | null;
   generation: number;
   fence: number;
@@ -63,7 +64,7 @@ export function safePayload(value: unknown): boolean {
   );
 }
 
-async function lockActive(db: ControlClient, lease: Lease) {
+export async function lockActive(db: ControlClient, lease: Lease) {
   const {
     rows: [item],
   } = await db.query<WorkRow>(
@@ -75,7 +76,7 @@ async function lockActive(db: ControlClient, lease: Lease) {
   return item;
 }
 
-async function experiment(db: ControlClient, item: WorkRow) {
+export async function experiment(db: ControlClient, item: WorkRow) {
   const {
     rows: [record],
   } = await db.query<ExperimentRow>(
@@ -410,6 +411,16 @@ async function terminal(
        reservation_micros=NULL WHERE id=$1`,
     [item.id, status === "infrastructure_error" || failure ? "failed" : "done"],
   );
+  if (item.kind === "compare_and_advance") {
+    await closeTrial(
+      db,
+      item.experiment_id,
+      exp,
+      "comparison_unavailable",
+      true,
+    );
+    return;
+  }
   await advance(db, item, exp);
 }
 
