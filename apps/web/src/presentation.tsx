@@ -1,4 +1,4 @@
-import { Alert, Badge, Code, Group, Loader, Text } from "@mantine/core";
+import { Alert, Badge, Button, Code, Group, Loader, Text } from "@mantine/core";
 import type { ExperimentSummary } from "@harnesslab/schemas/types";
 import Link from "next/link";
 
@@ -57,6 +57,7 @@ export function Pending({ label = "Loading" }: { label?: string }) {
 }
 
 export function Problem({ message }: { message: string }) {
+  const isAuthError = message.toLowerCase().includes("access token");
   return (
     <Alert
       role="alert"
@@ -64,7 +65,24 @@ export function Problem({ message }: { message: string }) {
       variant="light"
       title="Unable to complete the request"
     >
-      {message}
+      <Text size="sm">{message}</Text>
+      {isAuthError && (
+        <Group mt="xs">
+          <Button
+            size="xs"
+            color="red"
+            variant="outline"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.localStorage.removeItem("hl_operator_token");
+                window.location.reload();
+              }
+            }}
+          >
+            Reset Operator Token to Default
+          </Button>
+        </Group>
+      )}
     </Alert>
   );
 }

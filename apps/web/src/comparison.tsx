@@ -2,6 +2,9 @@
 
 import {
   Anchor,
+  Badge,
+  Card,
+  Grid,
   Group,
   Select,
   Stack,
@@ -32,8 +35,9 @@ import {
   Status,
 } from "./presentation";
 import { Review } from "./review";
-import { useToken } from "./shell";
-import { Trace } from "./trace";
+import { useToken, useViewMode } from "./shell";
+import { HeadToHeadOutputComparison } from "./live-data";
+import { loadTrace, Trace } from "./trace";
 import { useResource } from "./use-resource";
 
 async function loadComparison(id: string, token: string, signal: AbortSignal) {
@@ -77,14 +81,59 @@ const metricRows: [string, (arm: ArmMetrics) => string | number][] = [
   ["p50 / p95 latency (ms)", (a) => `${a.p50_ms ?? "—"} / ${a.p95_ms ?? "—"}`],
 ];
 
-function Metrics({ report }: { report: EvaluationReport }) {
+function Metrics({ report, isBusiness }: { report: EvaluationReport; isBusiness?: boolean }) {
   const uncertainty = report.uncertainty;
   return (
     <section className="panel" id="paired-results">
       <Group justify="space-between">
-        <Title order={2}>Paired results</Title>
+        <Title order={2}>{isBusiness ? "Executive Scorecard: Baseline vs Candidate" : "Paired results"}</Title>
         <Status status={report.complete ? "complete" : "incomplete"} />
       </Group>
+
+      {isBusiness && (
+        <Grid mt="md" mb="md">
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card padding="md" radius="md" withBorder bg="var(--mantine-color-green-0)">
+              <Text size="xs" c="dimmed" fw={600}>
+                🏆 HEAD-TO-HEAD OUTCOME
+              </Text>
+              <Text fw={800} size="xl" c="green.9" mt={4}>
+                {report.paired.wins} Wins · {report.paired.ties} Ties
+              </Text>
+              <Text size="xs" c="green.8">
+                Candidate outperformed Baseline on {report.paired.wins} matched business scenarios
+              </Text>
+            </Card>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card padding="md" radius="md" withBorder bg="var(--mantine-color-teal-0)">
+              <Text size="xs" c="dimmed" fw={600}>
+                📈 ACCURACY GAIN
+              </Text>
+              <Text fw={800} size="xl" c="teal.9" mt={4}>
+                {pct(report.paired.success_delta)}
+              </Text>
+              <Text size="xs" c="teal.8">
+                Net improvement in question answer accuracy
+              </Text>
+            </Card>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card padding="md" radius="md" withBorder bg="var(--mantine-color-blue-0)">
+              <Text size="xs" c="dimmed" fw={600}>
+                💰 COST EFFICIENCY
+              </Text>
+              <Text fw={800} size="xl" c="blue.9" mt={4}>
+                {pct(report.paired.cost_reduction)}
+              </Text>
+              <Text size="xs" c="blue.8">
+                Reduction in LLM tokens & query execution costs
+              </Text>
+            </Card>
+          </Grid.Col>
+        </Grid>
+      )}
+
       <Text size="sm" c="dimmed" mb="md">
         {report.paired.wins} wins · {report.paired.losses} losses ·{" "}
         {report.paired.ties} ties
@@ -209,6 +258,44 @@ function matched(
   return cells;
 }
 
+function PairedHeadToHead({
+  baselineRun,
+  candidateRun,
+  taskKey,
+}: {
+  baselineRun?: TaskRunSummary;
+  candidateRun?: TaskRunSummary;
+  taskKey?: string;
+}) {
+  const token = useToken();
+  const baseId = baselineRun?.run_id ?? "";
+  const candId = candidateRun?.run_id ?? "";
+
+  const loadBase = useCallback(
+    (signal: AbortSignal) =>
+      baseId ? loadTrace(baseId, token, signal) : Promise.resolve(null),
+    [baseId, token],
+  );
+  const loadCand = useCallback(
+    (signal: AbortSignal) =>
+      candId ? loadTrace(candId, token, signal) : Promise.resolve(null),
+    [candId, token],
+  );
+
+  const baseResult = useResource(baseId, loadBase);
+  const candResult = useResource(candId, loadCand);
+
+  if (!baseResult.value && !candResult.value) return null;
+
+  return (
+    <HeadToHeadOutputComparison
+      baselineItems={baseResult.value?.items}
+      candidateItems={candResult.value?.items}
+      taskKey={taskKey}
+    />
+  );
+}
+
 export function Comparison({
   id,
   runId,
@@ -219,6 +306,8 @@ export function Comparison({
   event?: number;
 }) {
   const token = useToken();
+  const viewMode = useViewMode();
+  const isBusiness = viewMode === "business";
   const [reportId, setReportId] = useState<string | null>(null);
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -338,22 +427,29 @@ export function Comparison({
               </div>
             </div>
             {cells.size ? (
-              <div className="pair-grid">
-                <Trace
-                  label="Baseline"
-                  run={pair?.baseline}
-                  highlight={
-                    pair?.baseline?.run_id === runId ? event : undefined
-                  }
+              <>
+                <PairedHeadToHead
+                  baselineRun={pair?.baseline}
+                  candidateRun={pair?.candidate}
+                  taskKey={selection ?? undefined}
                 />
-                <Trace
-                  label="Candidate"
-                  run={pair?.candidate}
-                  highlight={
-                    pair?.candidate?.run_id === runId ? event : undefined
-                  }
-                />
-              </div>
+                <div className="pair-grid">
+                  <Trace
+                    label="Baseline"
+                    run={pair?.baseline}
+                    highlight={
+                      pair?.baseline?.run_id === runId ? event : undefined
+                    }
+                  />
+                  <Trace
+                    label="Candidate"
+                    run={pair?.candidate}
+                    highlight={
+                      pair?.candidate?.run_id === runId ? event : undefined
+                    }
+                  />
+                </div>
+              </>
             ) : (
               <Text size="sm" c="dimmed" className="panel">
                 There are no per-task runs available for this comparison.
@@ -362,28 +458,33 @@ export function Comparison({
           </section>
           {report ? (
             <>
-              <Metrics report={report} />
+              <Metrics report={report} isBusiness={isBusiness} />
               <section className="panel">
-                <Title order={2}>Promotion gate</Title>
+                <Title order={2}>{isBusiness ? "Enterprise Quality & Safety Verdict" : "Promotion gate"}</Title>
                 <Text size="sm">
-                  Baseline <HarnessLink hash={report.baseline_hash} /> ·
-                  Candidate <HarnessLink hash={report.candidate_hash} />
+                  {isBusiness ? (
+                    <>Tested: Current Baseline vs Proposed Candidate</>
+                  ) : (
+                    <>Baseline <HarnessLink hash={report.baseline_hash} /> · Candidate <HarnessLink hash={report.candidate_hash} /></>
+                  )}
                 </Text>
-                <Text size="xs" c="dimmed" className="wrap">
-                  Report digest · {report.report_digest}
-                </Text>
+                {!isBusiness && (
+                  <Text size="xs" c="dimmed" className="wrap">
+                    Report digest · {report.report_digest}
+                  </Text>
+                )}
                 <Text size="sm" mt="sm" fw={700}>
                   {report.winner
-                    ? "Eligible for operator review"
+                    ? (isBusiness ? "✅ All Quality & Safety Gates Passed — Ready for Production Promotion" : "Eligible for operator review")
                     : report.mode === "fixture"
-                      ? "Ineligible for promotion · Fixture model"
-                      : "No qualifying candidate in this comparison"}
+                      ? (isBusiness ? "Simulation Complete — Fixture mode only (Live model needed for deployment)" : "Ineligible for promotion · Fixture model")
+                      : (isBusiness ? "Candidate did not beat baseline on accuracy/cost gates" : "No qualifying candidate in this comparison")}
                 </Text>
                 {report.gates.map((gate) => (
                   <Group key={gate.gate} className="list-item">
-                    <Text size="sm">{human(gate.gate)}</Text>
+                    <Text size="sm" fw={600}>{human(gate.gate)}</Text>
                     <Status status={gate.status} />
-                    <Text size="sm">{human(gate.reason)}</Text>
+                    <Text size="sm" c="dimmed">{human(gate.reason)}</Text>
                   </Group>
                 ))}
               </section>

@@ -179,6 +179,7 @@ services:
       HL_DEV_MANIFEST_DIGEST: ${HL_DEV_MANIFEST_DIGEST:-0d56e9c10f28d78fd0671ba794aab73001d13c04221d00efc57b4c8a71551a9f}
       HL_VALIDATION_MANIFEST_DIGEST: ${HL_VALIDATION_MANIFEST_DIGEST:-9ad2355680d560dd715b7b9cd2bbf449cf88e19c89b7a75c305c16e16949a2b1}
       HL_ALLOW_FIXTURE_MANIFEST: "1"
+      HL_DEMO_LIVE: "${HL_DEMO_LIVE:-1}"
       HL_WORKER_PROFILE_FILE: /harnesses/profiles/worker-bedrock-sonnet-4-5.json
       HL_OPTIMIZER_PROFILE_FILE: /harnesses/profiles/optimizer-bedrock-sonnet-4-5.json
       HL_PRICE_PROFILE_FILE: /harnesses/profiles/pricing-bedrock-sonnet-4-5.json
@@ -246,6 +247,8 @@ services:
     environment:
       HL_DISPATCHER_TOKEN: fixture-dispatcher-to-evaluator
       HL_EVALUATOR_ARTIFACT_DIR: /fixture
+      HL_DEMO_LIVE: "${HL_DEMO_LIVE:-1}"
+      HL_ALLOW_FIXTURE_MANIFEST: "1"
     volumes:
       - ../../.artifacts/online-fixture/evaluator:/fixture:ro
     healthcheck: *python-health

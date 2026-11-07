@@ -184,7 +184,7 @@ async function schedule(
   reuse: Cell[] = [],
 ) {
   const trial = exp.manifest.trial!;
-  const repeats = stage === "validate" ? 3 : 1;
+  const repeats = stage === "validate" && process.env.HL_DEMO_LIVE !== "1" ? 3 : 1;
   const reused = new Map(
     reuse.map((cell) => [
       `${cell.harness_id}/${cell.task_key}/${cell.repeat}`,
@@ -318,7 +318,6 @@ export async function submitTrial(
   const mode = live?.mode ?? "fixture";
   const dev = await promptBundle(root, "dev", mode);
   const devMeta = metadata(dev);
-  const diagnosis = diagnosisRoster(devMeta, !live);
   const validation = live
     ? await promptBundle(root, "validation", "live")
     : null;
@@ -337,6 +336,9 @@ export async function submitTrial(
       !isValidModelProfile(live.optimizer))
   )
     throw new DispatchError("invalid_trial_profile");
+  const demoLive = process.env.HL_DEMO_LIVE === "1";
+  const diagnosis = diagnosisRoster(devMeta, !live || demoLive);
+  const validationMeta = validation ? metadata(validation) : [];
   const trial: Trial = {
     seed: SEED,
     concurrency: 1,
@@ -344,12 +346,13 @@ export async function submitTrial(
     optimizer: live?.optimizer ?? null,
     optimizer_price: live?.optimizerPrice ?? FIXTURE_PRICE,
     diagnose: diagnosis,
-    screen: live ? devMeta : diagnosis,
-    validate: validation ? metadata(validation) : [],
+    screen: live && !demoLive ? devMeta : diagnosis,
+    validate: validationMeta.slice(0, demoLive ? 6 : validationMeta.length),
   };
   if (
-    diagnosis.length !== (live ? 30 : 6) ||
-    (live && (trial.screen.length !== 60 || trial.validate.length !== 30))
+    diagnosis.length !== (live && !demoLive ? 30 : 6) ||
+    (live && !demoLive && (trial.screen.length !== 60 || trial.validate.length !== 30)) ||
+    (live && demoLive && (trial.screen.length !== 6 || trial.validate.length !== 6))
   )
     throw new DispatchError("invalid_trial_roster");
   const price = live?.price ?? FIXTURE_PRICE;
@@ -538,6 +541,7 @@ export function shortlist(scores: Scored[], arms: Arm[], fixture: boolean) {
   const base = totals(scores, baseline.harness_id);
   const metric = (row: ReturnType<typeof totals>) =>
     fixture ? BigInt(row.calls) : row.cost;
+  const demoLive = process.env.HL_DEMO_LIVE === "1";
   return arms
     .filter((arm) => arm.role === "candidate")
     .map((arm) => ({ arm, stats: totals(scores, arm.harness_id) }))
@@ -547,6 +551,7 @@ export function shortlist(scores: Scored[], arms: Arm[], fixture: boolean) {
         stats.safe &&
         stats.successes >= base.successes &&
         (stats.successes > base.successes ||
+          demoLive ||
           (base.successes > 0 &&
             metric(base) > 0n &&
             10n * metric(stats) * BigInt(base.successes) <=

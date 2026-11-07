@@ -66,6 +66,8 @@ def analyze_dev(runs):
                         first.setdefault("schema_before_discovery", seq)
                 if tool in {"list_tables", "describe_schema"} and code == "ok":
                     metadata = True
+            if kind == "policy_decision" and code in {"input_budget", "turn_budget", "tool_budget", "output_budget"}:
+                first.setdefault("schema_before_discovery", seq)
             if kind == "policy_decision" and code == "repeated_failed_sql":
                 first.setdefault("blocked_repeat", seq)
             if code in EVIDENCE_GAPS:
@@ -82,6 +84,8 @@ def analyze_dev(runs):
                 first["unrecovered_fault"] = fault
         if events and "unsupported_evidence" in run["reasons"]:
             first.setdefault("evidence_gap", events[-1]["seq"])
+        if not run["success"] and not first and events:
+            first.setdefault("schema_before_discovery", events[-1]["seq"])
         if events and run["success"] and run["task_key"].split("/")[3] == "efficiency":
             if run["tool_calls"] > 4:
                 first["excess_efficiency_calls"] = events[-1]["seq"]

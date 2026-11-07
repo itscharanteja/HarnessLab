@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import FastAPI, Request
@@ -36,7 +37,9 @@ async def propose(request: Request):
         return await optimize(payload, checkpoint=Checkpoint.for_request(request, "optimizer_v1"))
     except InternalError as exc:
         return JSONResponse({"code": exc.code}, status_code=exc.status)
-    except (ValueError, KeyError, TypeError):
+    except (ValueError, KeyError, TypeError) as exc:
+        logging.warning("Optimizer invalid input: %s", exc)
         return JSONResponse({"code": "invalid_optimizer_input"}, status_code=422)
-    except Exception:
+    except Exception as exc:
+        logging.exception("Optimizer unexpected failure: %s", exc)
         return JSONResponse({"code": "optimizer_unavailable"}, status_code=503)

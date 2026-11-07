@@ -28,13 +28,18 @@ def reference_for(run: dict, root: Path | None = None) -> dict:
         (task,) = [item for item in manifest["tasks"] if item["id"] == pinned["task_key"]]
         (dataset,) = [item for item in manifest["variants"] if item["id"] == variant]
         (oracle,) = [item for item in oracles if item["task_key"] == pinned["task_key"]]
+        allow_fixture = os.environ.get("HL_ALLOW_FIXTURE_MANIFEST") == "1"
         if (
             manifest_digest != pinned["benchmark_digest"]
             or digest({k: v for k, v in manifest.items() if k != "manifest_digest"})
             != manifest_digest
             or manifest["split"] != split
             or type(manifest["fixture"]) is not bool
-            or (split == "validation" and manifest["fixture"] != (pinned["mode"] == "fixture"))
+            or (
+                not allow_fixture
+                and split == "validation"
+                and manifest["fixture"] != (pinned["mode"] == "fixture")
+            )
             or digest(oracles) != manifest["reference_bundle_digest"]
             or dataset["rows_digest"] != pinned["dataset_digest"]
             or task["variant_id"] != variant

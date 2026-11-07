@@ -30,12 +30,16 @@ export async function api<T>(
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   });
   const result = await response.json();
-  if (!response.ok)
+  if (!response.ok) {
+    if (result.code === "invalid_token" && typeof window !== "undefined") {
+      window.localStorage.removeItem("hl_operator_token");
+    }
     throw new RequestError(
       response.status,
       result.code,
       result.message ?? "Request failed.",
     );
+  }
   return result as T;
 }
 
