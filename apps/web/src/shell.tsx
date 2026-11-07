@@ -8,9 +8,28 @@ const TokenContext = createContext("");
 export const useToken = () => useContext(TokenContext);
 
 export function DashboardShell({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(() => {
+    if (typeof window !== "undefined") {
+      return (
+        window.localStorage.getItem("hl_operator_token") ??
+        "fixture-local-operator-token-00000001"
+      );
+    }
+    return "fixture-local-operator-token-00000001";
+  });
   const [entry, setEntry] = useState("");
   const [opened, setOpened] = useState(false);
+
+  const updateToken = (newToken: string) => {
+    setToken(newToken);
+    if (typeof window !== "undefined") {
+      if (newToken) {
+        window.localStorage.setItem("hl_operator_token", newToken);
+      } else {
+        window.localStorage.removeItem("hl_operator_token");
+      }
+    }
+  };
   return (
     <TokenContext.Provider value={token}>
       <header className="topbar">
@@ -58,7 +77,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            setToken(entry.trim());
+            updateToken(entry.trim());
             setEntry("");
             setOpened(false);
           }}
@@ -76,7 +95,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               variant="subtle"
               color="gray"
               onClick={() => {
-                setToken("");
+                updateToken("");
                 setEntry("");
                 setOpened(false);
               }}
