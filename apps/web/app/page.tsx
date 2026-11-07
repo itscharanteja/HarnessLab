@@ -71,7 +71,7 @@ export default function Home() {
         <div>
           <div className="eyebrow">DataOps evaluation workspace</div>
           <h1>HarnessLab</h1>
-          <Text c="dimmed" mb="md" maw={550}>
+          <Text className="hero-description" mb="md" maw={550}>
             Follow an investigation from SQL evidence to a proposed harness
             change, then compare the two on the same tasks.
           </Text>

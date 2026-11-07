@@ -27,7 +27,13 @@ import {
 import { useToken } from "./shell";
 import { useResource } from "./use-resource";
 
-const stages = ["diagnose", "propose", "screen", "validate", "report"];
+const stages = [
+  { id: "diagnose", label: "Diagnose", detail: "Inspect baseline runs" },
+  { id: "propose", label: "Propose", detail: "Suggest harness changes" },
+  { id: "screen", label: "Screen", detail: "Compare on development tasks" },
+  { id: "validate", label: "Validate", detail: "Evaluate finalists" },
+  { id: "report", label: "Report", detail: "Record outcomes and gates" },
+];
 const running = (value: ExperimentDetail) => active(value.experiment.status);
 
 export function Experiment({ id }: { id: string }) {
@@ -62,7 +68,7 @@ export function Experiment({ id }: { id: string }) {
       <Anchor component={Link} href="/">
         All experiments
       </Anchor>
-      <div>
+      <header className="page-banner">
         <div className="eyebrow">Investigation run</div>
         <h1 className="page-title">Experiment {id.slice(0, 8)}</h1>
         {experiment && (
@@ -71,7 +77,7 @@ export function Experiment({ id }: { id: string }) {
             <Status status={experiment.status} />
           </Group>
         )}
-      </div>
+      </header>
       {result.error && <Problem message={result.error} />}
       {!detail && !result.error && (
         <Pending label="Loading experiment progress" />
@@ -95,18 +101,34 @@ export function Experiment({ id }: { id: string }) {
                 Open comparison
               </Button>
             </Group>
-            <Group gap="xs" mb="sm">
-              {stages.map((stage) => (
-                <Text
-                  key={stage}
-                  size="sm"
-                  fw={stage === experiment.stage ? 800 : 400}
-                  aria-current={stage === experiment.stage ? "step" : undefined}
-                >
-                  {human(stage)}
-                </Text>
-              ))}
-            </Group>
+            <ol className="stage-track" aria-label="Experiment stages">
+              {stages.map((stage, index) => {
+                const current = stage.id === experiment.stage;
+                const skipped =
+                  stage.id === "validate" && experiment.mode === "fixture";
+                return (
+                  <li
+                    key={stage.id}
+                    aria-current={current ? "step" : undefined}
+                    data-skipped={skipped || undefined}
+                  >
+                    <span className="stage-index" aria-hidden="true">
+                      0{index + 1}
+                    </span>
+                    <strong>{stage.label}</strong>
+                    <span className="stage-detail">
+                      {current
+                        ? running(detail)
+                          ? "Current stage"
+                          : "Last recorded stage"
+                        : skipped
+                          ? "Skipped in fixture"
+                          : stage.detail}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
             <Text size="sm" aria-live="polite">
               {experiment.terminal_runs} of {experiment.scheduled_runs}{" "}
               scheduled runs complete

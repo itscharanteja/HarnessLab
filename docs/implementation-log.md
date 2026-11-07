@@ -129,6 +129,8 @@ Hosted Supabase verification and live submission await the provisioned deploymen
 
 The operator browser tests intercept review responses to verify the candidate hash, report digest, revision and rollback confirmation. Phase 5 tests exercise the corresponding pointer changes in disposable PostgreSQL. No live comparison or production activation took place.
 
+The dashboard replay follow-up passed `make lint`, `make typecheck`, the production web image build and all four tests in `make test-e2e`. The real fixture browser test verified failure deep links, direct step selection, forward/back navigation, replay, pause and a 390 px layout. An initial browser run timed out before fixture submission while the web image was building. The suite passed against the final healthy image.
+
 ## Phase 8 — CI, deployment and handoff
 
 The Cloud Run and Vercel handoff was prepared locally. The Cloud Run manifest and IAM renderer used the sample inventory and did not modify cloud resources.

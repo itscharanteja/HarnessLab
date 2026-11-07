@@ -10,7 +10,9 @@ test("a visitor starts a fixture and follows diagnosis into paired traces", asyn
   test.setTimeout(150000);
   await page.goto("/");
   await page.getByRole("button", { name: "Run fixture experiment" }).click();
-  await expect(page).toHaveURL(/\/experiments\/[0-9a-f-]{36}$/);
+  await expect(page).toHaveURL(/\/experiments\/[0-9a-f-]{36}$/, {
+    timeout: 20000,
+  });
   await expect(page.getByText(/scheduled runs complete/)).toBeVisible();
   await expect(page.getByText("completed", { exact: true })).toBeVisible({
     timeout: 125000,
@@ -50,7 +52,31 @@ test("a visitor starts a fixture and follows diagnosis into paired traces", asyn
   await expect(
     candidate.getByRole("heading", { name: "Worker Graph" }),
   ).toBeVisible();
-  await expect(baseline.locator('[data-highlight="true"]')).toBeVisible();
+  const failure = baseline.locator('[data-highlight="true"]');
+  await expect(failure).toBeVisible();
+  const failureSeq = new URL(page.url()).searchParams.get("event");
+  await expect(
+    baseline.getByRole("link", {
+      name: `Trace event ${failureSeq}`,
+      exact: true,
+    }),
+  ).toBeVisible();
+  const path = baseline.getByRole("list", { name: "Worker Graph path" });
+  const steps = path.getByRole("button");
+  await steps.first().click();
+  await expect(steps.first()).toHaveAttribute("aria-current", "step");
+  await baseline.getByRole("button", { name: "Next graph step" }).click();
+  await expect(steps.nth(1)).toHaveAttribute("aria-current", "step");
+  await baseline.getByRole("button", { name: "Previous graph step" }).click();
+  await expect(steps.first()).toHaveAttribute("aria-current", "step");
+  await baseline.getByRole("button", { name: "Replay" }).click();
+  await expect(steps.nth(1)).toHaveAttribute("aria-current", "step");
+  await baseline.getByRole("button", { name: "Pause" }).click();
+  await expect(baseline.getByRole("button", { name: "Replay" })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    390,
+  );
   await baseline
     .locator("summary")
     .filter({ hasText: "Ordered graph events" })

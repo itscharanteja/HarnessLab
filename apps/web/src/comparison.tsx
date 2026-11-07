@@ -80,7 +80,7 @@ const metricRows: [string, (arm: ArmMetrics) => string | number][] = [
 function Metrics({ report }: { report: EvaluationReport }) {
   const uncertainty = report.uncertainty;
   return (
-    <section className="panel">
+    <section className="panel" id="paired-results">
       <Group justify="space-between">
         <Title order={2}>Paired results</Title>
         <Status status={report.complete ? "complete" : "incomplete"} />
@@ -270,36 +270,96 @@ export function Comparison({
       <Anchor component={Link} href={`/experiments/${id}`}>
         Back to experiment
       </Anchor>
-      <div>
+      <header className="page-banner">
         <div className="eyebrow">Matched trial</div>
         <h1 className="page-title">Comparison</h1>
+        <p>Follow the baseline and candidate through the same investigation.</p>
         {detail && (
           <Group>
             <Mode mode={detail.experiment.mode} />
             <Status status={detail.experiment.status} />
+            {report && (
+              <Anchor href="#paired-results">Jump to paired results ↓</Anchor>
+            )}
           </Group>
         )}
-      </div>
+      </header>
       {result.error && <Problem message={result.error} />}
       {reviewStatus && <Text role="status">{reviewStatus}</Text>}
       {!detail && !result.error && <Pending label="Loading comparisons" />}
       {detail && data && (
         <>
-          {data.reports.length > 0 && (
-            <Select
-              label="Candidate comparison"
-              allowDeselect={false}
-              value={report?.report_digest ?? null}
-              data={data.reports.map((row) => ({
-                value: row.report_digest,
-                label: `${shortHash(row.candidate_hash)} · ${human(row.scope)}`,
-              }))}
-              onChange={(next) => {
-                setReportId(next);
-                setSelectedCell(null);
-              }}
-            />
-          )}
+          <section
+            aria-labelledby="paired-traces-heading"
+            className="trace-workspace"
+          >
+            <div className="panel trace-workspace-header">
+              <div className="eyebrow">Execution replay</div>
+              <Title id="paired-traces-heading" order={2}>
+                Paired traces
+              </Title>
+              <Text size="sm" c="dimmed" mb="md">
+                Select a step or replay the recorded path. Each arm opens its
+                own evidence.
+              </Text>
+              <div className="trace-filters">
+                {cells.size > 0 && (
+                  <Select
+                    label="Matched task and repeat"
+                    searchable
+                    allowDeselect={false}
+                    value={selection}
+                    onChange={setSelectedCell}
+                    data={[...cells.keys()].sort().map((value) => {
+                      const [task, repeat] = value.split("|");
+                      const [, , variant, category, slot] = task!.split("/");
+                      return {
+                        value,
+                        label: `${human(category ?? task!)} · ${variant ?? ""}/${slot ?? ""} · repeat ${repeat}`,
+                      };
+                    })}
+                  />
+                )}
+                {data.reports.length > 0 && (
+                  <Select
+                    label="Candidate comparison"
+                    allowDeselect={false}
+                    value={report?.report_digest ?? null}
+                    data={data.reports.map((row) => ({
+                      value: row.report_digest,
+                      label: `${shortHash(row.candidate_hash)} · ${human(row.scope)}`,
+                    }))}
+                    onChange={(next) => {
+                      setReportId(next);
+                      setSelectedCell(null);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            {cells.size ? (
+              <div className="pair-grid">
+                <Trace
+                  label="Baseline"
+                  run={pair?.baseline}
+                  highlight={
+                    pair?.baseline?.run_id === runId ? event : undefined
+                  }
+                />
+                <Trace
+                  label="Candidate"
+                  run={pair?.candidate}
+                  highlight={
+                    pair?.candidate?.run_id === runId ? event : undefined
+                  }
+                />
+              </div>
+            ) : (
+              <Text size="sm" c="dimmed" className="panel">
+                There are no per-task runs available for this comparison.
+              </Text>
+            )}
+          </section>
           {report ? (
             <>
               <Metrics report={report} />
@@ -346,46 +406,6 @@ export function Comparison({
               setVersion((n) => n + 1);
             }}
           />
-          <Title order={2}>Paired traces</Title>
-          {cells.size ? (
-            <>
-              <Select
-                label="Matched task and repeat"
-                searchable
-                allowDeselect={false}
-                value={selection}
-                onChange={setSelectedCell}
-                data={[...cells.keys()].sort().map((value) => {
-                  const [task, repeat] = value.split("|");
-                  const [, , variant, category, slot] = task!.split("/");
-                  return {
-                    value,
-                    label: `${human(category ?? task!)} · ${variant ?? ""}/${slot ?? ""} · repeat ${repeat}`,
-                  };
-                })}
-              />
-              <div className="pair-grid">
-                <Trace
-                  label="Baseline"
-                  run={pair?.baseline}
-                  highlight={
-                    pair?.baseline?.run_id === runId ? event : undefined
-                  }
-                />
-                <Trace
-                  label="Candidate"
-                  run={pair?.candidate}
-                  highlight={
-                    pair?.candidate?.run_id === runId ? event : undefined
-                  }
-                />
-              </div>
-            </>
-          ) : (
-            <Text size="sm" c="dimmed">
-              There are no per-task runs available for this comparison.
-            </Text>
-          )}
         </>
       )}
     </Stack>
