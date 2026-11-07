@@ -143,7 +143,8 @@ class OpenAITurns:
         await self.client.close()
 
     def estimate(self, payload: str) -> int:
-        return len(POLICY.encode()) + len(payload.encode()) + self.schema_bytes + 256
+        payload_tokens = max(50, (len(payload.encode()) + 2) // 3 + 100)
+        return 2600 + payload_tokens
 
     async def turn(self, payload: str, max_output: int) -> Turn:
         from openai.types.shared import Reasoning
@@ -302,7 +303,8 @@ class BedrockConverseTurns:
         pass
 
     def estimate(self, payload: str) -> int:
-        return len(POLICY.encode()) + len(payload.encode()) + self.schema_bytes + 256
+        payload_tokens = max(50, (len(payload.encode()) + 2) // 3 + 100)
+        return 2600 + payload_tokens
 
     async def turn(self, payload: str, max_output: int) -> Turn:
         import asyncio

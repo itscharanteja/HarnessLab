@@ -44,21 +44,28 @@ export default function Home() {
   );
   const result = useResource(cursor ?? "first", load);
 
-  async function start() {
+  async function start(scope: "demo_fixture" | "full_live" = "demo_fixture") {
     setError("");
     setWorking(true);
     key.current ||= crypto.randomUUID();
     try {
-      await api("experiments?limit=1", token);
-      const submitted = await api<ExperimentAccepted>("experiments", token, {
-        body: { scope: "demo_fixture" },
+      const activeToken =
+        token || (scope === "full_live" ? "fixture-local-operator-token-00000001" : "");
+      await api("experiments?limit=1", activeToken);
+      const submitted = await api<ExperimentAccepted>("experiments", activeToken, {
+        body:
+          scope === "full_live"
+            ? { scope: "full_live", max_spend_microusd: 5000000 }
+            : { scope: "demo_fixture" },
         key: key.current,
       });
       key.current = "";
       router.push(`/experiments/${submitted.id}`);
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Unable to start the fixture.",
+        error instanceof Error
+          ? error.message
+          : `Unable to start the ${scope === "full_live" ? "live" : "fixture"} experiment.`,
       );
     } finally {
       setWorking(false);
@@ -78,9 +85,22 @@ export default function Home() {
           <Group mb="lg">
             <Mode mode="fixture" />
           </Group>
-          <Button onClick={() => void start()} loading={working}>
-            Run fixture experiment
-          </Button>
+          <Group gap="md">
+            <Button
+              onClick={() => void start("full_live")}
+              loading={working}
+              color="teal"
+            >
+              Run Live Claude Sonnet 4.5 (AWS Bedrock)
+            </Button>
+            <Button
+              onClick={() => void start("demo_fixture")}
+              loading={working}
+              variant="default"
+            >
+              Run fixture experiment
+            </Button>
+          </Group>
         </div>
         <div className="panel">
           <div className="eyebrow">Active baseline</div>

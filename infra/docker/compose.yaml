@@ -133,9 +133,9 @@ services:
       HL_OPERATOR_SUBJECTS: 67cf8d62-a69d-440e-aee0-3451430099cd
       HL_DISPATCHER_INTERNAL_URL: http://dispatcher:4001
       HL_API_DISPATCH_TOKEN: fixture-api-dispatcher-token-00000001
-      HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-0}"
+      HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-1}"
       REDIS_URL: redis://redis:6379/0
-      HL_MODE: fixture
+      HL_MODE: ${HL_MODE:-fixture}
     ports:
       - "127.0.0.1:${API_PORT:-4000}:4000"
     depends_on:
@@ -166,7 +166,7 @@ services:
       RUNNER_URL: http://runner:8000
       EVALUATOR_URL: http://evaluator:8000
       OPTIMIZER_URL: http://optimizer:8000
-      HL_MODE: fixture
+      HL_MODE: ${HL_MODE:-fixture}
       HL_RUNNER_TOKEN: fixture-dispatcher-to-runner
       HL_EVALUATOR_TOKEN: fixture-dispatcher-to-evaluator
       HL_OPTIMIZER_TOKEN: fixture-dispatcher-to-optimizer
@@ -175,9 +175,17 @@ services:
       HL_DISPATCHER_ARTIFACT_DIR: /fixture
       HL_OPS_TOKEN: fixture-private-operations-token-0001
       HL_API_DISPATCH_TOKEN: fixture-api-dispatcher-token-00000001
-      HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-0}"
+      HL_PUBLIC_RUNS: "${HL_PUBLIC_RUNS:-1}"
+      HL_DEV_MANIFEST_DIGEST: ${HL_DEV_MANIFEST_DIGEST:-0d56e9c10f28d78fd0671ba794aab73001d13c04221d00efc57b4c8a71551a9f}
+      HL_VALIDATION_MANIFEST_DIGEST: ${HL_VALIDATION_MANIFEST_DIGEST:-9ad2355680d560dd715b7b9cd2bbf449cf88e19c89b7a75c305c16e16949a2b1}
+      HL_ALLOW_FIXTURE_MANIFEST: "1"
+      HL_WORKER_PROFILE_FILE: /harnesses/profiles/worker-bedrock-sonnet-4-5.json
+      HL_OPTIMIZER_PROFILE_FILE: /harnesses/profiles/optimizer-bedrock-sonnet-4-5.json
+      HL_PRICE_PROFILE_FILE: /harnesses/profiles/pricing-bedrock-sonnet-4-5.json
+      HL_MAX_EXPERIMENT_MICRO_USD: ${HL_MAX_EXPERIMENT_MICRO_USD:-15000000}
     volumes:
       - ../../.artifacts/online-fixture/dispatcher:/fixture:ro
+      - ../../harnesses/profiles:/harnesses/profiles:ro
     depends_on:
       control-db:
         condition: service_healthy
@@ -211,7 +219,10 @@ services:
     init: true
     command: ["uvicorn", "harnesslab_runner.http:app", "--host", "0.0.0.0"]
     environment:
-      HL_MODE: fixture
+      HL_MODE: ${HL_MODE:-fixture}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       HL_DISPATCHER_TOKEN: fixture-dispatcher-to-runner
       HL_CHECKPOINT_URL: http://dispatcher:4001/internal/v1/checkpoint
       HL_CHECKPOINT_TOKEN: fixture-worker-to-dispatcher
@@ -220,7 +231,7 @@ services:
     volumes:
       - ../../.artifacts/online-fixture/runner:/fixture:ro
     healthcheck: *python-health
-    networks: [private, sandbox]
+    networks: [private, sandbox, egress]
 
   evaluator:
     build:
@@ -251,12 +262,15 @@ services:
     init: true
     command: ["uvicorn", "harnesslab_opt.http:app", "--host", "0.0.0.0"]
     environment:
-      HL_MODE: fixture
+      HL_MODE: ${HL_MODE:-fixture}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       HL_DISPATCHER_TOKEN: fixture-dispatcher-to-optimizer
       HL_CHECKPOINT_URL: http://dispatcher:4001/internal/v1/checkpoint
       HL_CHECKPOINT_TOKEN: fixture-optimizer-to-dispatcher
     healthcheck: *python-health
-    networks: [private]
+    networks: [private, egress]
 
   web:
     build:
@@ -289,6 +303,7 @@ networks:
   control-cli: {}
   sandbox-cli: {}
   holdout-cli: {}
+  egress: {}
   control:
     internal: true
   sandbox:

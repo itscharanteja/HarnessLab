@@ -190,6 +190,7 @@ export function registerApiCommands(
       if (!accepts("ExperimentAccepted", row)) throw new Error("Unavailable");
       return reply.code(202).send(row);
     } catch (error) {
+      console.error("submit-experiment error:", error);
       const code =
         error instanceof DispatchError && Object.hasOwn(errors, error.code)
           ? error.code
@@ -205,6 +206,7 @@ export function registerApiCommands(
     try {
       return reply.code(202).send(await cancel(pool, request.body));
     } catch (error) {
+      console.error("submit-experiment error:", error);
       const code =
         error instanceof DispatchError && Object.hasOwn(errors, error.code)
           ? error.code

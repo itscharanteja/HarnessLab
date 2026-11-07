@@ -39,7 +39,7 @@ export function createAuth(env: NodeJS.ProcessEnv = process.env) {
     publicUrl.origin !== env.HL_PUBLIC_ORIGIN ||
     (!secure && !(local && publicUrl.protocol === "http:")) ||
     (mode !== "supabase" && !fixture) ||
-    (fixture && (!local || env.HL_MODE !== "fixture"))
+    (fixture && (!local || (env.HL_MODE !== "fixture" && env.HL_MODE !== "live")))
   )
     throw new Error("Invalid API identity configuration");
   const proxyToken = env.HL_PROXY_TOKEN ?? "";

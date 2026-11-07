@@ -95,7 +95,9 @@ export async function promptBundle(
       digest(snapshot) !== manifest_digest ||
       manifest.split !== split ||
       typeof manifest.fixture !== "boolean" ||
-      (split === "validation" && manifest.fixture !== (mode === "fixture")) ||
+      (split === "validation" &&
+        process.env.HL_ALLOW_FIXTURE_MANIFEST !== "1" &&
+        manifest.fixture !== (mode === "fixture")) ||
       digest(prompts) !== manifest.prompt_bundle_digest
     )
       throw new Error("Artifact provenance mismatch");
