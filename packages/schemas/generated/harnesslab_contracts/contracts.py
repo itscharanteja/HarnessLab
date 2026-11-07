@@ -955,6 +955,11 @@ class TraceEvent(
     root: TraceEvent1 | TraceEvent2 | TraceEvent3 | TraceEvent4 | TraceEvent5 | TraceEvent6 | TraceEvent7 | TraceEvent8 | TraceEvent9
 
 
+class Provider(StrEnum):
+    openai = 'openai'
+    bedrock = 'bedrock'
+
+
 class ReasoningEffort(StrEnum):
     none = 'none'
     minimal = 'minimal'
@@ -968,6 +973,8 @@ class ModelSettings(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    provider: Provider | None = None
+    region: Annotated[StrictStr | None, Field(max_length=60, min_length=1)] = None
     snapshot: Annotated[StrictStr, Field(max_length=120, min_length=1)]
     timeout_ms: Annotated[StrictInt, Field(ge=1, le=90000)]
     reasoning_effort: ReasoningEffort | None

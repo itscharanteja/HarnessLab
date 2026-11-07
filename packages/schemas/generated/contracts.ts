@@ -633,6 +633,8 @@ export interface FaultFixture {
   match: "first_eligible_sql";
 }
 export interface ModelSettings {
+  provider?: "openai" | "bedrock";
+  region?: string;
   snapshot: string;
   timeout_ms: number;
   reasoning_effort: ("none" | "minimal" | "low" | "medium" | "high" | "xhigh") | null;

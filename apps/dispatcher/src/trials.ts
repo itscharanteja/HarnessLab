@@ -281,6 +281,23 @@ async function schedule(
   return true;
 }
 
+function isValidModelProfile(model: ModelSettings): boolean {
+  const provider = model.provider ?? "openai";
+  if (provider === "openai") {
+    return /^gpt-.+-\d{4}-\d{2}-\d{2}$/.test(model.snapshot);
+  }
+  if (provider === "bedrock") {
+    return (
+      typeof model.region === "string" &&
+      model.region.length > 0 &&
+      /^(?:(?:us|apac|global|eu|in)\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*(?::[a-z0-9-]+)?$/.test(
+        model.snapshot,
+      )
+    );
+  }
+  return false;
+}
+
 export async function submitTrial(
   pool: ControlPool,
   root: string,
@@ -316,8 +333,8 @@ export async function submitTrial(
       live.optimizer.reasoning_effort !== null ||
       live.maxSpend <= 0n ||
       live.maxSpend > BigInt(Number.MAX_SAFE_INTEGER) ||
-      !/^gpt-.+-\d{4}-\d{2}-\d{2}$/.test(live.worker.snapshot) ||
-      !/^gpt-.+-\d{4}-\d{2}-\d{2}$/.test(live.optimizer.snapshot))
+      !isValidModelProfile(live.worker) ||
+      !isValidModelProfile(live.optimizer))
   )
     throw new DispatchError("invalid_trial_profile");
   const trial: Trial = {

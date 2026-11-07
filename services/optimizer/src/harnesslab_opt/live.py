@@ -95,3 +95,95 @@ def live_proposer(settings, key):
         }
 
     return propose
+
+
+def bedrock_proposer(settings):
+    import asyncio
+
+    import boto3
+    from botocore.config import Config
+
+    if (
+        not settings
+        or not re.fullmatch(
+            r"^(?:(?:us|apac|global|eu|in)\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*(?::[a-z0-9-]+)?$",
+            settings["snapshot"],
+        )
+        or any(
+            settings.get(field) is not None
+            for field in ("temperature", "top_p", "reasoning_effort")
+        )
+    ):
+        raise ValueError("unsupported_optimizer_profile")
+    region = settings.get("region")
+    if not region or not isinstance(region, str):
+        raise ValueError("missing_optimizer_region")
+    schema = provider_schema(definition("ProposalBatch"))
+    timeout_s = settings["timeout_ms"] / 1000
+    config = Config(
+        region_name=region,
+        connect_timeout=timeout_s,
+        read_timeout=timeout_s,
+        retries={"total_max_attempts": 1},
+    )
+    client = boto3.client("bedrock-runtime", config=config)
+
+    async def propose(request):
+        payload = json.dumps(
+            {"diagnosis": request["diagnosis"], "parent": request["parent"]}, ensure_ascii=False
+        )
+        if (
+            len(payload.encode()) + len(json.dumps(schema).encode()) + len(INSTRUCTIONS) + 256
+            > INPUT_LIMIT
+        ):
+            raise ValueError("optimizer_input_budget")
+
+        tools = [
+            {
+                "toolSpec": {
+                    "name": "propose_patches",
+                    "description": "Submit up to three harness modification proposals",
+                    "inputSchema": {"json": schema},
+                }
+            }
+        ]
+
+        kwargs = {
+            "modelId": settings["snapshot"],
+            "messages": [{"role": "user", "content": [{"text": payload}]}],
+            "system": [{"text": INSTRUCTIONS}],
+            "inferenceConfig": {"maxTokens": OUTPUT_LIMIT},
+            "toolConfig": {"tools": tools},
+        }
+
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: client.converse(**kwargs))
+
+        usage = response.get("usage", {})
+        input_tokens = usage.get("inputTokens", 0)
+        output_tokens = usage.get("outputTokens", 0)
+        if not 0 < input_tokens <= INPUT_LIMIT or not 0 < output_tokens <= OUTPUT_LIMIT:
+            raise ValueError("optimizer_usage_unknown")
+
+        proposals = None
+        for part in response.get("output", {}).get("message", {}).get("content", []):
+            if "toolUse" in part and part["toolUse"].get("name") == "propose_patches":
+                proposals = part["toolUse"].get("input", {}).get("proposals")
+                break
+            if "text" in part:
+                try:
+                    parsed = json.loads(part["text"])
+                    if isinstance(parsed, dict) and "proposals" in parsed:
+                        proposals = parsed["proposals"]
+                        break
+                except (ValueError, AttributeError):
+                    pass
+
+        request_id = response.get("ResponseMetadata", {}).get("RequestId")
+        return proposals, {
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "request_id": request_id,
+        }
+
+    return propose

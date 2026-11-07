@@ -11,7 +11,7 @@ from harnesslab_contracts.validate import accepts
 
 from .fixture import OrderCountFixture
 from .graph import execute, validate_request
-from .model import OpenAITurns
+from .model import BedrockConverseTurns, OpenAITurns
 from .trial_fixture import TrialFixture
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -68,11 +68,17 @@ async def execute_task(request: Request):
             )
             run = await execute(payload, model, dsn, catalog, graph_events=events)
         else:
-            key = os.environ.get("OPENAI_API_KEY")
-            if not key:
-                raise InternalError(503, "provider_unavailable")
-            async with OpenAITurns(manifest["worker"], key) as model:
-                run = await execute(payload, model, dsn, catalog, graph_events=events)
+            worker_settings = manifest["worker"]
+            provider = worker_settings.get("provider", "openai")
+            if provider == "bedrock":
+                async with BedrockConverseTurns(worker_settings) as model:
+                    run = await execute(payload, model, dsn, catalog, graph_events=events)
+            else:
+                key = os.environ.get("OPENAI_API_KEY")
+                if not key:
+                    raise InternalError(503, "provider_unavailable")
+                async with OpenAITurns(worker_settings, key) as model:
+                    run = await execute(payload, model, dsn, catalog, graph_events=events)
         response = {
             "schema_version": 1,
             "run": run,

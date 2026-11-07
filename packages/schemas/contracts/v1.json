@@ -2296,6 +2296,15 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "provider": {
+          "type": "string",
+          "enum": ["openai", "bedrock"]
+        },
+        "region": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
         "snapshot": {
           "type": "string",
           "minLength": 1,

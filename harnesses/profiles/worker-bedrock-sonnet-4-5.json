@@ -1,0 +1,9 @@
+{
+  "provider": "bedrock",
+  "region": "us-east-1",
+  "snapshot": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "timeout_ms": 60000,
+  "reasoning_effort": null,
+  "temperature": "0.0",
+  "top_p": null
+}
