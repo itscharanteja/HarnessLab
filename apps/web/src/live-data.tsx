@@ -13,8 +13,354 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import type { Finding, Scalar, TraceEvent } from "@harnesslab/schemas/types";
+import type {
+  Finding,
+  Scalar,
+  TraceEvent,
+  WorkerAnswer,
+} from "@harnesslab/schemas/types";
 import { human } from "./presentation";
+
+export interface SqlQueryStep {
+  kind: "sql_query";
+  seq: number;
+  sql: string;
+  status: "ok" | "error" | "timeout";
+  cumulative_ms: number;
+  duration_ms: number;
+  columns?: { name: string; type: string }[];
+  rows?: Scalar[][];
+  error?: string;
+}
+
+export interface FinalOutputStep {
+  kind: "final_output";
+  seq: number;
+  answer: WorkerAnswer;
+  cumulative_ms: number;
+}
+
+export interface NonQueryLogStep {
+  kind: "non_query_log";
+  seq: number;
+  eventKind: TraceEvent["kind"];
+  actionName: string;
+  summary: string;
+  status: "ok" | "warning" | "error" | "denied";
+  cumulative_ms: number;
+  rawPayload: unknown;
+  autoElevate: boolean;
+}
+
+export type ExecutionStep = SqlQueryStep | FinalOutputStep | NonQueryLogStep;
+
+function isOutcomeFailure(code?: string): boolean {
+  if (!code) return false;
+  return ![
+    "ok",
+    "success",
+    "started",
+    "requested",
+    "answered",
+    "clarified",
+    "passed",
+    "schema_preflight",
+    "recovered",
+  ].includes(code);
+}
+
+export function extractInvestigationSteps(
+  items: TraceEvent[],
+): ExecutionStep[] {
+  const steps: ExecutionStep[] = [];
+  let pendingSql: { seq: number; sql: string; elapsed_ms: number } | null =
+    null;
+
+  for (const item of items) {
+    if (item.kind === "tool_request") {
+      if (item.payload.call.name === "execute_readonly_sql") {
+        if (pendingSql) {
+          steps.push({
+            kind: "sql_query",
+            seq: pendingSql.seq,
+            sql: pendingSql.sql,
+            status: "error",
+            cumulative_ms: pendingSql.elapsed_ms,
+            duration_ms: 0,
+            error: "aborted_or_incomplete",
+          });
+        }
+        pendingSql = {
+          seq: item.seq,
+          sql: item.payload.call.arguments.sql,
+          elapsed_ms: item.elapsed_ms,
+        };
+      } else {
+        const call = item.payload.call;
+        let summary = "";
+        if (call.name === "list_tables") {
+          summary = "list all tables";
+        } else if (call.name === "describe_schema") {
+          summary = `tables: [${call.arguments.tables?.join(", ") || ""}]`;
+        } else if (call.name === "get_business_definition") {
+          summary = `metric: ${call.arguments.metric_id}`;
+        } else if (call.name === "validate_calculation") {
+          const ops =
+            call.arguments.operands
+              ?.map((o) =>
+                o.source.kind === "cell"
+                  ? `${o.source.query_id}[${o.source.row},${o.source.column}]`
+                  : o.source.calculation_id,
+              )
+              .join(", ") || "";
+          summary = `calc: ${call.arguments.operation} on [${ops}]`;
+        } else if (call.name === "inspect_query_error") {
+          summary = `error_id: ${call.arguments.error_id}`;
+        } else {
+          summary = "tool request";
+        }
+
+        const isError = isOutcomeFailure(item.outcome_code);
+        steps.push({
+          kind: "non_query_log",
+          seq: item.seq,
+          eventKind: item.kind,
+          actionName: call.name,
+          summary,
+          status: isError ? "error" : "ok",
+          cumulative_ms: item.elapsed_ms,
+          rawPayload: item.payload,
+          autoElevate: isError,
+        });
+      }
+    } else if (item.kind === "tool_result") {
+      const payload = item.payload;
+      if (payload.name === "execute_readonly_sql") {
+        const seq = pendingSql?.seq ?? item.seq;
+        const sql = pendingSql?.sql ?? "-- SQL query unavailable";
+        const duration_ms = pendingSql
+          ? Math.max(0, item.elapsed_ms - pendingSql.elapsed_ms)
+          : 0;
+        const cumulative_ms = pendingSql?.elapsed_ms ?? item.elapsed_ms;
+
+        if (payload.status === "ok") {
+          steps.push({
+            kind: "sql_query",
+            seq,
+            sql,
+            status: "ok",
+            cumulative_ms,
+            duration_ms,
+            columns: payload.data.columns,
+            rows: payload.data.rows,
+          });
+        } else {
+          steps.push({
+            kind: "sql_query",
+            seq,
+            sql,
+            status: payload.code === "timeout" ? "timeout" : "error",
+            cumulative_ms,
+            duration_ms,
+            error: payload.code,
+          });
+        }
+        pendingSql = null;
+      } else {
+        let summary = "";
+        let status: "ok" | "warning" | "error" | "denied" = "ok";
+        let autoElevate = false;
+
+        if (payload.status === "ok") {
+          if (payload.name === "list_tables") {
+            summary = `${payload.data.tables.length} tables found`;
+          } else if (payload.name === "describe_schema") {
+            summary = `${payload.data.tables.length} tables inspected (${payload.data.tables.map((t) => t.name).join(", ")})`;
+          } else if (payload.name === "get_business_definition") {
+            const defSnippet =
+              payload.data.definition.length > 60
+                ? payload.data.definition.slice(0, 60) + "..."
+                : payload.data.definition;
+            summary = `${payload.data.metric_id}: ${defSnippet}`;
+          } else if (payload.name === "validate_calculation") {
+            summary = `calc_id: ${payload.data.calculation_id} = ${payload.data.value}`;
+          } else if (payload.name === "inspect_query_error") {
+            summary = `hint: ${payload.data.hint.slice(0, 60)}`;
+          } else {
+            summary = "tool result success";
+          }
+          if (isOutcomeFailure(item.outcome_code)) {
+            status = "error";
+            autoElevate = true;
+          }
+        } else {
+          status = "error";
+          autoElevate = true;
+          summary = `${payload.name} failed: ${payload.code}`;
+        }
+
+        steps.push({
+          kind: "non_query_log",
+          seq: item.seq,
+          eventKind: item.kind,
+          actionName: payload.name,
+          summary,
+          status,
+          cumulative_ms: item.elapsed_ms,
+          rawPayload: item.payload,
+          autoElevate,
+        });
+      }
+    } else if (item.kind === "final_output") {
+      steps.push({
+        kind: "final_output",
+        seq: item.seq,
+        answer: item.payload,
+        cumulative_ms: item.elapsed_ms,
+      });
+    } else if (item.kind === "start") {
+      const isError = isOutcomeFailure(item.outcome_code);
+      steps.push({
+        kind: "non_query_log",
+        seq: item.seq,
+        eventKind: item.kind,
+        actionName: "start",
+        summary: `task: ${item.payload.task_key}`,
+        status: isError ? "error" : "ok",
+        cumulative_ms: item.elapsed_ms,
+        rawPayload: item.payload,
+        autoElevate: isError,
+      });
+    } else if (item.kind === "model_usage") {
+      const isError = isOutcomeFailure(item.outcome_code);
+      steps.push({
+        kind: "non_query_log",
+        seq: item.seq,
+        eventKind: item.kind,
+        actionName: "model_usage",
+        summary: `${item.payload.input_tokens.toLocaleString()} in / ${item.payload.output_tokens.toLocaleString()} out tokens`,
+        status: isError ? "error" : "ok",
+        cumulative_ms: item.elapsed_ms,
+        rawPayload: item.payload,
+        autoElevate: isError,
+      });
+    } else if (item.kind === "policy_decision") {
+      const denied =
+        item.payload.safety_violation || isOutcomeFailure(item.outcome_code);
+      const summary = `reason: ${item.payload.reason}${item.payload.safety_violation ? " (safety violation)" : ""}`;
+      steps.push({
+        kind: "non_query_log",
+        seq: item.seq,
+        eventKind: item.kind,
+        actionName: "policy_decision",
+        summary,
+        status: denied ? "denied" : "ok",
+        cumulative_ms: item.elapsed_ms,
+        rawPayload: item.payload,
+        autoElevate: Boolean(denied),
+      });
+    } else if (item.kind === "fault") {
+      steps.push({
+        kind: "non_query_log",
+        seq: item.seq,
+        eventKind: item.kind,
+        actionName: "fault",
+        summary: `fault injected: ${item.payload.tool} (${item.payload.kind})`,
+        status: "warning",
+        cumulative_ms: item.elapsed_ms,
+        rawPayload: item.payload,
+        autoElevate: true,
+      });
+    } else if (item.kind === "recovery") {
+      const isError = isOutcomeFailure(item.outcome_code);
+      steps.push({
+        kind: "non_query_log",
+        seq: item.seq,
+        eventKind: item.kind,
+        actionName: "recovery",
+        summary: `recovered from ${item.payload.error_id} on ${item.payload.tool}`,
+        status: isError ? "error" : "ok",
+        cumulative_ms: item.elapsed_ms,
+        rawPayload: item.payload,
+        autoElevate: isError,
+      });
+    } else if (item.kind === "grade") {
+      const isError =
+        !item.payload.success || isOutcomeFailure(item.outcome_code);
+      steps.push({
+        kind: "non_query_log",
+        seq: item.seq,
+        eventKind: item.kind,
+        actionName: "grade",
+        summary: `success: ${item.payload.success}${item.payload.reasons?.length ? ` (${item.payload.reasons.join(", ")})` : ""}`,
+        status: isError ? "warning" : "ok",
+        cumulative_ms: item.elapsed_ms,
+        rawPayload: item.payload,
+        autoElevate: isError,
+      });
+    }
+  }
+
+  if (pendingSql) {
+    steps.push({
+      kind: "sql_query",
+      seq: pendingSql.seq,
+      sql: pendingSql.sql,
+      status: "error",
+      cumulative_ms: pendingSql.elapsed_ms,
+      duration_ms: 0,
+      error: "incomplete_request",
+    });
+  }
+
+  return steps;
+}
+
+export function computeDivergenceStep(
+  baseItems?: TraceEvent[] | null,
+  candItems?: TraceEvent[] | null,
+): { baseSeq?: number; candSeq?: number } | null {
+  if (
+    !baseItems ||
+    !candItems ||
+    baseItems.length === 0 ||
+    candItems.length === 0
+  ) {
+    return null;
+  }
+  const baseSteps = extractInvestigationSteps(baseItems);
+  const candSteps = extractInvestigationSteps(candItems);
+  const maxLen = Math.max(baseSteps.length, candSteps.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const b = baseSteps[i];
+    const c = candSteps[i];
+    if (!b || !c) {
+      return { baseSeq: b?.seq, candSeq: c?.seq };
+    }
+    if (b.kind !== c.kind) {
+      return { baseSeq: b.seq, candSeq: c.seq };
+    }
+    if (b.kind === "sql_query" && c.kind === "sql_query") {
+      if (b.sql.trim() !== c.sql.trim() || b.status !== c.status) {
+        return { baseSeq: b.seq, candSeq: c.seq };
+      }
+    } else if (b.kind === "final_output" && c.kind === "final_output") {
+      if (JSON.stringify(b.answer) !== JSON.stringify(c.answer)) {
+        return { baseSeq: b.seq, candSeq: c.seq };
+      }
+    } else if (b.kind === "non_query_log" && c.kind === "non_query_log") {
+      if (
+        b.eventKind !== c.eventKind ||
+        b.actionName !== c.actionName ||
+        b.status !== c.status
+      ) {
+        return { baseSeq: b.seq, candSeq: c.seq };
+      }
+    }
+  }
+  return null;
+}
 
 export interface SqlExecution {
   seq: number;
@@ -58,7 +404,8 @@ export function extractLiveData(items: TraceEvent[]): LiveOutputData {
   let totalDurationMs = 0;
 
   // Track pending SQL request to pair with its result
-  let pendingSql: { seq: number; sql: string; elapsed_ms: number } | null = null;
+  let pendingSql: { seq: number; sql: string; elapsed_ms: number } | null =
+    null;
 
   for (const item of items) {
     if (item.elapsed_ms > totalDurationMs) {
@@ -105,7 +452,10 @@ export function extractLiveData(items: TraceEvent[]): LiveOutputData {
         schema.tables = Array.from(
           new Set([...schema.tables, ...payload.data.tables]),
         );
-      } else if (payload.name === "describe_schema" && payload.status === "ok") {
+      } else if (
+        payload.name === "describe_schema" &&
+        payload.status === "ok"
+      ) {
         for (const t of payload.data.tables) {
           if (!schema.inspected.some((existing) => existing.table === t.name)) {
             schema.inspected.push({
@@ -198,7 +548,10 @@ export function LiveDataView({
           <Group justify="space-between" align="flex-start">
             <div>
               <Text size="xs" fw={700} c="teal.9" tt="uppercase" lts="0.05em">
-                🎯 {data.findings.length > 0 ? "Final Business Answer" : "Live PostgreSQL Query Result"}
+                🎯{" "}
+                {data.findings.length > 0
+                  ? "Final Business Answer"
+                  : "Live PostgreSQL Query Result"}
               </Text>
               <Group gap="xs" mt={4} align="baseline">
                 <Text fw={900} size="2.2rem" c="teal.9" lh={1.1}>
@@ -255,7 +608,12 @@ export function LiveDataView({
 
       {/* Clarification or Unable */}
       {data.clarification && (
-        <Card padding="md" radius="md" withBorder bg="var(--mantine-color-blue-0)">
+        <Card
+          padding="md"
+          radius="md"
+          withBorder
+          bg="var(--mantine-color-blue-0)"
+        >
           <Text size="xs" fw={700} c="blue.9" tt="uppercase">
             💬 Focused Clarification Question
           </Text>
@@ -269,7 +627,12 @@ export function LiveDataView({
       )}
 
       {data.unableReason && (
-        <Card padding="md" radius="md" withBorder bg="var(--mantine-color-yellow-0)">
+        <Card
+          padding="md"
+          radius="md"
+          withBorder
+          bg="var(--mantine-color-yellow-0)"
+        >
           <Text size="xs" fw={700} c="yellow.9" tt="uppercase">
             ⚠️ AI Investigation Unable to Complete
           </Text>
@@ -293,7 +656,8 @@ export function LiveDataView({
         {data.sqlExecutions.length === 0 ? (
           <Paper p="sm" withBorder bg="gray.0" radius="md">
             <Text size="xs" c="dimmed">
-              No SQL queries were executed in this run (schema discovery or turn limit reached before query).
+              No SQL queries were executed in this run (schema discovery or turn
+              limit reached before query).
             </Text>
           </Paper>
         ) : (
@@ -321,7 +685,8 @@ export function LiveDataView({
                 </Group>
                 {exec.rows && (
                   <Badge variant="light" size="xs">
-                    {exec.rows.length} row{exec.rows.length === 1 ? "" : "s"} returned
+                    {exec.rows.length} row{exec.rows.length === 1 ? "" : "s"}{" "}
+                    returned
                   </Badge>
                 )}
               </Group>
@@ -350,14 +715,23 @@ export function LiveDataView({
                   </Text>
                   {exec.rows.length > 0 ? (
                     <div style={{ overflowX: "auto" }}>
-                      <Table striped highlightOnHover withTableBorder withColumnBorders>
+                      <Table
+                        striped
+                        highlightOnHover
+                        withTableBorder
+                        withColumnBorders
+                      >
                         <Table.Thead bg="gray.1">
                           <Table.Tr>
                             {exec.columns.map((col) => (
                               <Table.Th key={col.name}>
                                 <Group gap={4} wrap="nowrap">
                                   <span>{col.name}</span>
-                                  <Badge size="xs" variant="outline" color="gray">
+                                  <Badge
+                                    size="xs"
+                                    variant="outline"
+                                    color="gray"
+                                  >
                                     {col.type}
                                   </Badge>
                                 </Group>
@@ -375,7 +749,11 @@ export function LiveDataView({
                                       null
                                     </Text>
                                   ) : typeof val === "boolean" ? (
-                                    val ? "true" : "false"
+                                    val ? (
+                                      "true"
+                                    ) : (
+                                      "false"
+                                    )
                                   ) : (
                                     String(val)
                                   )}
@@ -399,7 +777,8 @@ export function LiveDataView({
               {exec.status === "timeout" && (
                 <Paper p="xs" mt="xs" bg="orange.0" withBorder radius="sm">
                   <Text size="xs" c="orange.9" fw={600}>
-                    ⏱️ Database Timeout (Fault Injected by Benchmark to test agent resilience)
+                    ⏱️ Database Timeout (Fault Injected by Benchmark to test
+                    agent resilience)
                   </Text>
                 </Paper>
               )}
@@ -458,7 +837,8 @@ export function LiveDataView({
       <Card padding="xs" radius="md" withBorder bg="gray.0">
         <Group justify="space-between">
           <Text size="xs" c="dimmed">
-            ⚡ <strong>AI Footprint:</strong> {data.totalTokens.input.toLocaleString()} input tokens ·{" "}
+            ⚡ <strong>AI Footprint:</strong>{" "}
+            {data.totalTokens.input.toLocaleString()} input tokens ·{" "}
             {data.totalTokens.output.toLocaleString()} output tokens ·{" "}
             {data.totalDurationMs} ms total duration
           </Text>
@@ -490,7 +870,10 @@ export function HeadToHeadOutputComparison({
   const baseVal = baseData?.primaryValue?.value ?? "—";
   const candVal = candData?.primaryValue?.value ?? "—";
   const isMatch = baseVal !== "—" && candVal !== "—" && baseVal === candVal;
-  const candWon = candVal !== "—" && (baseVal === "—" || candData?.findings.length! > baseData?.findings.length!);
+  const candWon =
+    candVal !== "—" &&
+    (baseVal === "—" ||
+      (candData?.findings.length ?? 0) > (baseData?.findings.length ?? 0));
 
   return (
     <Card
@@ -537,9 +920,15 @@ export function HeadToHeadOutputComparison({
             <Text size="xs" c="dimmed">
               Primary Value:
             </Text>
-            <Text fw={800} size="1.8rem" c={baseVal !== "—" ? "dark.7" : "dimmed"}>
+            <Text
+              fw={800}
+              size="1.8rem"
+              c={baseVal !== "—" ? "dark.7" : "dimmed"}
+            >
               {baseVal}
-              {baseData?.primaryValue?.unit ? ` ${baseData.primaryValue.unit}` : ""}
+              {baseData?.primaryValue?.unit
+                ? ` ${baseData.primaryValue.unit}`
+                : ""}
             </Text>
 
             <Divider my="xs" />
@@ -571,7 +960,8 @@ export function HeadToHeadOutputComparison({
                 {baseData?.totalTokens.output.toLocaleString()} out
               </Text>
               <Text size="xs" c="dimmed">
-                {baseData?.sqlExecutions.length} queries · {baseData?.totalDurationMs} ms
+                {baseData?.sqlExecutions.length} queries ·{" "}
+                {baseData?.totalDurationMs} ms
               </Text>
             </Group>
           </Card>
@@ -602,7 +992,9 @@ export function HeadToHeadOutputComparison({
             </Text>
             <Text fw={800} size="1.8rem" c="teal.9">
               {candVal}
-              {candData?.primaryValue?.unit ? ` ${candData.primaryValue.unit}` : ""}
+              {candData?.primaryValue?.unit
+                ? ` ${candData.primaryValue.unit}`
+                : ""}
             </Text>
 
             <Divider my="xs" />
@@ -635,7 +1027,8 @@ export function HeadToHeadOutputComparison({
                 {candData?.totalTokens.output.toLocaleString()} out
               </Text>
               <Text size="xs" c="dimmed">
-                {candData?.sqlExecutions.length} queries · {candData?.totalDurationMs} ms
+                {candData?.sqlExecutions.length} queries ·{" "}
+                {candData?.totalDurationMs} ms
               </Text>
             </Group>
           </Card>

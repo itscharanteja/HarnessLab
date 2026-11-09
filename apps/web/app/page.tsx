@@ -1,6 +1,15 @@
 "use client";
 
-import { Badge, Button, Card, Divider, Grid, Group, Stack, Text, Title } from "@mantine/core";
+import {
+  Badge,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import type {
   ExperimentAccepted,
   ExperimentPage,
@@ -52,15 +61,20 @@ export default function Home() {
     key.current ||= crypto.randomUUID();
     try {
       const activeToken =
-        token || (scope === "full_live" ? "fixture-local-operator-token-00000001" : "");
+        token ||
+        (scope === "full_live" ? "fixture-local-operator-token-00000001" : "");
       await api("experiments?limit=1", activeToken);
-      const submitted = await api<ExperimentAccepted>("experiments", activeToken, {
-        body:
-          scope === "full_live"
-            ? { scope: "full_live", max_spend_microusd: 5000000 }
-            : { scope: "demo_fixture" },
-        key: key.current,
-      });
+      const submitted = await api<ExperimentAccepted>(
+        "experiments",
+        activeToken,
+        {
+          body:
+            scope === "full_live"
+              ? { scope: "full_live", max_spend_microusd: 5000000 }
+              : { scope: "demo_fixture" },
+          key: key.current,
+        },
+      );
       key.current = "";
       router.push(`/experiments/${submitted.id}`);
     } catch (error) {
@@ -87,7 +101,9 @@ export default function Home() {
       <section className="hero">
         <div>
           <div className="eyebrow">
-            {isBusiness ? "Enterprise AI Governance & Optimization" : "DataOps evaluation workspace"}
+            {isBusiness
+              ? "Enterprise AI Governance & Optimization"
+              : "DataOps evaluation workspace"}
           </div>
           <h1>{isBusiness ? "DataOps AI Investigation Hub" : "HarnessLab"}</h1>
           <Text className="hero-description" mb="md" maw={550}>
@@ -118,7 +134,9 @@ export default function Home() {
               loading={working}
               variant="default"
             >
-              {isBusiness ? "Run Quick Simulation (Fixture)" : "Run fixture experiment"}
+              {isBusiness
+                ? "Run Quick Simulation (Fixture)"
+                : "Run fixture experiment"}
             </Button>
           </Group>
         </div>
@@ -129,7 +147,11 @@ export default function Home() {
           {result.value?.baseline ? (
             <div>
               <Text fw={700} size="md" mt="xs">
-                {isBusiness ? "Production Baseline v1.0 (Claude Sonnet 4.5)" : <HarnessLink hash={result.value.baseline.hash} />}
+                {isBusiness ? (
+                  "Production Baseline v1.0 (Claude Sonnet 4.5)"
+                ) : (
+                  <HarnessLink hash={result.value.baseline.hash} />
+                )}
               </Text>
               {isBusiness && (
                 <Text size="xs" c="dimmed">
@@ -154,25 +176,34 @@ export default function Home() {
         <Grid>
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Card padding="md" radius="md" withBorder>
-              <Text fw={700} size="sm">📊 Real DataOps Scenarios</Text>
+              <Text fw={700} size="sm">
+                📊 Real DataOps Scenarios
+              </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                Tests multi-table joins, revenue bridges, refunds, and financial reconciliations against genuine PostgreSQL data.
+                Tests multi-table joins, revenue bridges, refunds, and financial
+                reconciliations against genuine PostgreSQL data.
               </Text>
             </Card>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Card padding="md" radius="md" withBorder>
-              <Text fw={700} size="sm">🧠 Autonomous Optimization</Text>
+              <Text fw={700} size="sm">
+                🧠 Autonomous Optimization
+              </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                Detects failure patterns (token exhaustion, query policy violations) and proposes validated YAML patches automatically.
+                Detects failure patterns (token exhaustion, query policy
+                violations) and proposes validated YAML patches automatically.
               </Text>
             </Card>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Card padding="md" radius="md" withBorder>
-              <Text fw={700} size="sm">🛡️ Zero-Risk Deployment</Text>
+              <Text fw={700} size="sm">
+                🛡️ Zero-Risk Deployment
+              </Text>
               <Text size="xs" c="dimmed" mt={4}>
-                Candidate configurations must pass head-to-head A/B tournaments and strict safety gates before promotion.
+                Candidate configurations must pass head-to-head A/B tournaments
+                and strict safety gates before promotion.
               </Text>
             </Card>
           </Grid.Col>
@@ -184,7 +215,9 @@ export default function Home() {
         <Group justify="space-between" mb="sm">
           <div>
             <Title order={2}>
-              {isBusiness ? "Recent Investigations & Trials" : "Experiment history"}
+              {isBusiness
+                ? "Recent Investigations & Trials"
+                : "Experiment history"}
             </Title>
             <Text size="sm" c="dimmed">
               {isBusiness
@@ -205,7 +238,10 @@ export default function Home() {
         {result.value?.history.items.map((experiment) => (
           <div key={experiment.id} className="list-item">
             <Group justify="space-between" gap="xs">
-              <Link href={`/experiments/${experiment.id}`} style={{ fontWeight: 650 }}>
+              <Link
+                href={`/experiments/${experiment.id}`}
+                style={{ fontWeight: 650 }}
+              >
                 {isBusiness
                   ? `${experiment.mode === "live" ? "Claude 4.5 Live Trial" : "Simulation Trial"} #${experiment.id.slice(0, 8)}`
                   : `Experiment ${experiment.id.slice(0, 8)}`}
@@ -216,7 +252,12 @@ export default function Home() {
               <Mode mode={experiment.mode} />
               <Text size="xs" c="dimmed">
                 {isBusiness && experiment.stage && (
-                  <span style={{ fontWeight: 600, color: "var(--mantine-color-blue-6)" }}>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "var(--mantine-color-blue-6)",
+                    }}
+                  >
                     {stageLabels[experiment.stage] || experiment.stage} ·{" "}
                   </span>
                 )}

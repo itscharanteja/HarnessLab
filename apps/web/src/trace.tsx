@@ -13,8 +13,13 @@ import { LiveDataView } from "./live-data";
 import { human, Pending, Problem, Status } from "./presentation";
 import { useToken, useViewMode } from "./shell";
 import { useResource } from "./use-resource";
+import { InvestigationWorkbench } from "./workbench";
 
-export async function loadTrace(id: string, token: string, signal: AbortSignal) {
+export async function loadTrace(
+  id: string,
+  token: string,
+  signal: AbortSignal,
+) {
   const result = await api<RunTracePage>(
     `runs/${id}/trace?limit=100&graph=1`,
     token,
@@ -69,15 +74,23 @@ function EventSummary({ event }: { event: TraceEvent }) {
 
   let businessTitle = human(event.kind);
   if (isBusiness) {
-    if (event.kind === "start") businessTitle = "🚀 AI Started Task Investigation";
-    else if (event.kind === "model_usage") businessTitle = "⚡ Claude Generated Reasoning & Turn";
+    if (event.kind === "start")
+      businessTitle = "🚀 AI Started Task Investigation";
+    else if (event.kind === "model_usage")
+      businessTitle = "⚡ Claude Generated Reasoning & Turn";
     else if (event.kind === "tool_request") {
-      if (tool === "list_tables") businessTitle = "🔍 AI Discovered Available Database Tables";
-      else if (tool === "describe_schema") businessTitle = "📋 AI Inspected Table Schema & Relations";
-      else if (tool === "execute_readonly_sql") businessTitle = "📊 AI Executed Read-Only SQL Query";
-      else if (tool === "get_business_definition") businessTitle = "📖 AI Looked Up Business Definition";
-      else if (tool === "validate_calculation") businessTitle = "🔢 AI Validated Financial Calculation";
-      else if (tool === "inspect_query_error") businessTitle = "⚠️ AI Analyzed Database Query Error";
+      if (tool === "list_tables")
+        businessTitle = "🔍 AI Discovered Available Database Tables";
+      else if (tool === "describe_schema")
+        businessTitle = "📋 AI Inspected Table Schema & Relations";
+      else if (tool === "execute_readonly_sql")
+        businessTitle = "📊 AI Executed Read-Only SQL Query";
+      else if (tool === "get_business_definition")
+        businessTitle = "📖 AI Looked Up Business Definition";
+      else if (tool === "validate_calculation")
+        businessTitle = "🔢 AI Validated Financial Calculation";
+      else if (tool === "inspect_query_error")
+        businessTitle = "⚠️ AI Analyzed Database Query Error";
       else businessTitle = `🛠️ Action: ${human(tool || "")}`;
     } else if (event.kind === "tool_result") {
       businessTitle = `✅ Data Retrieved from PostgreSQL`;
@@ -113,19 +126,36 @@ export function Trace({
   label,
   run,
   highlight,
+  divergenceSeq,
+  sqlOnly,
+  onToggleSqlOnly,
+  expandAllTrigger,
+  collapseAllTrigger,
+  hideControls,
+  traceResource,
 }: {
   label: string;
   run?: TaskRunSummary;
   highlight?: number;
+  divergenceSeq?: number;
+  sqlOnly?: boolean;
+  onToggleSqlOnly?: (value: boolean) => void;
+  expandAllTrigger?: number;
+  collapseAllTrigger?: number;
+  hideControls?: boolean;
+  traceResource?: { value?: RunTracePage | null; error?: string };
 }) {
   const token = useToken();
+  const viewMode = useViewMode();
+  const isTechnical = viewMode === "technical";
   const id = run?.run_id ?? "";
   const load = useCallback(
     (signal: AbortSignal) =>
       id ? loadTrace(id, token, signal) : Promise.resolve(null),
     [id, token],
   );
-  const result = useResource(id, load);
+  const selfResult = useResource(id, load);
+  const result = traceResource ?? selfResult;
   const log = useRef<HTMLOListElement>(null);
   useEffect(() => {
     const target = document.getElementById(`trace-${id}-${highlight}`);
@@ -164,72 +194,128 @@ export function Trace({
           ) : null}
           {result.error && <Problem message={result.error} />}
           {!result.value && !result.error && <Pending label="Loading trace" />}
-          {result.value && (
-            <Tabs defaultValue="live-data" variant="outline" radius="md">
-              <Tabs.List mb="xs">
-                <Tabs.Tab value="live-data">📊 Live Output & Data</Tabs.Tab>
-                <Tabs.Tab value="technical">⚙️ Technical Trace & Graph</Tabs.Tab>
-              </Tabs.List>
-
-              <Tabs.Panel value="live-data">
-                <LiveDataView items={result.value.items} armLabel={label} />
-              </Tabs.Panel>
-
-              <Tabs.Panel value="technical">
-                <Graph
-                  key={`${id}/${highlight ?? ""}`}
-                  kind="Worker"
-                  graph={result.value.worker_graph}
-                  initialEvidence={highlight}
-                  evidence={(seq) => (
-                    <Anchor size="xs" href={`#trace-${id}-${seq}`}>
-                      Trace event {seq}
-                    </Anchor>
-                  )}
-                  inspectEvidence={(seq) => {
-                    const event = result.value?.items.find(
-                      (row) => row.seq === seq,
-                    );
-                    return event && <EventSummary event={event} />;
-                  }}
-                />
-                <Group justify="space-between" gap="xs" mt="sm">
-                  <Title order={4}>Recorded trace</Title>
-                  <Text size="xs" c="dimmed">
-                    {result.value.items.length} events
-                  </Text>
-                </Group>
-                {!result.value.items.length && (
-                  <Text size="sm" c="dimmed">
-                    This run has no recorded trace events.
-                  </Text>
-                )}
-                <ol
-                  ref={log}
-                  className="event-list trace-log"
-                  aria-label={label + " trace events"}
-                >
-                  {result.value.items.map((event) => (
-                    <li
-                      id={`trace-${id}-${event.seq}`}
-                      key={event.seq}
-                      data-highlight={highlight === event.seq}
+          {result.value &&
+            (isTechnical ? (
+              <Stack gap="sm">
+                {result.value.worker_graph && (
+                  <details
+                    style={{
+                      background: "#fff",
+                      border: "1px solid var(--line)",
+                      borderRadius: 8,
+                      padding: "8px 12px",
+                    }}
+                  >
+                    <summary
+                      style={{
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        fontSize: "0.85rem",
+                        color: "var(--ink)",
+                      }}
                     >
-                      <span className="trace-sequence">#{event.seq}</span>
-                      <div>
-                        <EventSummary event={event} />
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-                {result.value.next_cursor && (
-                  <Text size="sm">
-                    Additional events are available through the run trace API.
-                  </Text>
+                      🕸️ LangGraph Execution Graph (Optional)
+                    </summary>
+                    <div style={{ marginTop: 8 }}>
+                      <Graph
+                        key={`${id}/${highlight ?? ""}`}
+                        kind="Worker"
+                        graph={result.value.worker_graph}
+                        initialEvidence={highlight}
+                        evidence={(seq) => (
+                          <Anchor size="xs" href={`#trace-${id}-${seq}`}>
+                            Trace event {seq}
+                          </Anchor>
+                        )}
+                        inspectEvidence={(seq) => {
+                          const event = result.value?.items.find(
+                            (row) => row.seq === seq,
+                          );
+                          return event && <EventSummary event={event} />;
+                        }}
+                      />
+                    </div>
+                  </details>
                 )}
-              </Tabs.Panel>
-            </Tabs>
-          )}
+                <InvestigationWorkbench
+                  items={result.value.items}
+                  runId={id}
+                  divergenceSeq={divergenceSeq}
+                  sqlOnly={sqlOnly}
+                  onToggleSqlOnly={onToggleSqlOnly}
+                  expandAllTrigger={expandAllTrigger}
+                  collapseAllTrigger={collapseAllTrigger}
+                  hideControls={hideControls}
+                />
+              </Stack>
+            ) : (
+              <Tabs defaultValue="live-data" variant="outline" radius="md">
+                <Tabs.List mb="xs">
+                  <Tabs.Tab value="live-data">📊 Live Output & Data</Tabs.Tab>
+                  <Tabs.Tab value="technical">
+                    ⚙️ Technical Trace & Graph
+                  </Tabs.Tab>
+                </Tabs.List>
+
+                <Tabs.Panel value="live-data">
+                  <LiveDataView items={result.value.items} armLabel={label} />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="technical">
+                  <Graph
+                    key={`${id}/${highlight ?? ""}`}
+                    kind="Worker"
+                    graph={result.value.worker_graph}
+                    initialEvidence={highlight}
+                    evidence={(seq) => (
+                      <Anchor size="xs" href={`#trace-${id}-${seq}`}>
+                        Trace event {seq}
+                      </Anchor>
+                    )}
+                    inspectEvidence={(seq) => {
+                      const event = result.value?.items.find(
+                        (row) => row.seq === seq,
+                      );
+                      return event && <EventSummary event={event} />;
+                    }}
+                  />
+                  <Group justify="space-between" gap="xs" mt="sm">
+                    <Title order={4}>Recorded trace</Title>
+                    <Text size="xs" c="dimmed">
+                      {result.value.items.length} events
+                    </Text>
+                  </Group>
+                  {!result.value.items.length && (
+                    <Text size="sm" c="dimmed">
+                      This run has no recorded trace events.
+                    </Text>
+                  )}
+                  <ol
+                    ref={log}
+                    className="event-list trace-log"
+                    aria-label={label + " trace events"}
+                  >
+                    {result.value.items.map((event) => (
+                      <li
+                        id={`trace-${id}-${event.seq}`}
+                        key={event.seq}
+                        data-highlight={highlight === event.seq}
+                      >
+                        <span className="trace-sequence">#{event.seq}</span>
+                        <div>
+                          <EventSummary event={event} />
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                  {result.value.next_cursor && (
+                    <Text size="sm">
+                      Additional events are available through the run trace API.
+                    </Text>
+                  )}
+                </Tabs.Panel>
+              </Tabs>
+            ))}
         </Stack>
       )}
     </section>

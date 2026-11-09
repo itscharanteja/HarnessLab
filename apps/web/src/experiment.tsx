@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Alert,
   Anchor,
   Badge,
   Button,
@@ -31,11 +30,41 @@ import { useToken, useViewMode } from "./shell";
 import { useResource } from "./use-resource";
 
 const stages = [
-  { id: "diagnose", label: "Diagnose", detail: "Inspect baseline runs", businessLabel: "1. Benchmark Baseline", businessDetail: "Test on 30 business questions" },
-  { id: "propose", label: "Propose", detail: "Suggest harness changes", businessLabel: "2. AI Root Cause", businessDetail: "Find bottlenecks & propose fixes" },
-  { id: "screen", label: "Screen", detail: "Compare on development tasks", businessLabel: "3. A/B Tournament", businessDetail: "Candidate vs Baseline face-off" },
-  { id: "validate", label: "Validate", detail: "Evaluate finalists", businessLabel: "4. Verification", businessDetail: "Test safety & data precision" },
-  { id: "report", label: "Report", detail: "Record outcomes and gates", businessLabel: "5. Production Decision", businessDetail: "Audit scorecards & promote" },
+  {
+    id: "diagnose",
+    label: "Diagnose",
+    detail: "Inspect baseline runs",
+    businessLabel: "1. Benchmark Baseline",
+    businessDetail: "Test on 30 business questions",
+  },
+  {
+    id: "propose",
+    label: "Propose",
+    detail: "Suggest harness changes",
+    businessLabel: "2. AI Root Cause",
+    businessDetail: "Find bottlenecks & propose fixes",
+  },
+  {
+    id: "screen",
+    label: "Screen",
+    detail: "Compare on development tasks",
+    businessLabel: "3. A/B Tournament",
+    businessDetail: "Candidate vs Baseline face-off",
+  },
+  {
+    id: "validate",
+    label: "Validate",
+    detail: "Evaluate finalists",
+    businessLabel: "4. Verification",
+    businessDetail: "Test safety & data precision",
+  },
+  {
+    id: "report",
+    label: "Report",
+    detail: "Record outcomes and gates",
+    businessLabel: "5. Production Decision",
+    businessDetail: "Audit scorecards & promote",
+  },
 ];
 const running = (value: ExperimentDetail) => active(value.experiment.status);
 
@@ -74,7 +103,11 @@ export function Experiment({ id }: { id: string }) {
         All experiments
       </Anchor>
       <header className="page-banner">
-        <div className="eyebrow">{isBusiness ? "Enterprise AI Optimization Trial" : "Investigation run"}</div>
+        <div className="eyebrow">
+          {isBusiness
+            ? "Enterprise AI Optimization Trial"
+            : "Investigation run"}
+        </div>
         <h1 className="page-title">
           {isBusiness
             ? `${experiment?.mode === "live" ? "Claude 4.5 Live Investigation" : "Simulation Trial"} #${id.slice(0, 8)}`
@@ -94,14 +127,21 @@ export function Experiment({ id }: { id: string }) {
       </header>
 
       {isBusiness && experiment && (
-        <Card padding="md" radius="md" withBorder bg="var(--mantine-color-blue-0)">
+        <Card
+          padding="md"
+          radius="md"
+          withBorder
+          bg="var(--mantine-color-blue-0)"
+        >
           <Text fw={700} size="sm" c="blue.9">
             📋 Executive Summary: Continuous Agent Optimization
           </Text>
           <Text size="xs" c="dimmed" mt={4}>
-            HarnessLab tests the production baseline AI against real PostgreSQL business scenarios.
-            If Claude runs out of turns or tokens, our AI Optimizer analyzes the exact root cause
-            and proposes a targeted configuration patch before running a verified side-by-side tournament.
+            HarnessLab tests the production baseline AI against real PostgreSQL
+            business scenarios. If Claude runs out of turns or tokens, our AI
+            Optimizer analyzes the exact root cause and proposes a targeted
+            configuration patch before running a verified side-by-side
+            tournament.
           </Text>
         </Card>
       )}
@@ -115,9 +155,19 @@ export function Experiment({ id }: { id: string }) {
           <section className="panel" aria-label="Experiment progress">
             <Group justify="space-between" align="flex-start" mb="md">
               <div>
-                <Title order={2}>{isBusiness ? "Pipeline Progression" : "Progress"}</Title>
+                <Title order={2}>
+                  {isBusiness ? "Pipeline Progression" : "Progress"}
+                </Title>
                 <Text size="sm" c="dimmed">
-                  {time(experiment.created_at)} · {isBusiness ? "Production Baseline v1.0" : <>Pinned baseline <HarnessLink hash={experiment.baseline_hash} /></>}
+                  {time(experiment.created_at)} ·{" "}
+                  {isBusiness ? (
+                    "Production Baseline v1.0"
+                  ) : (
+                    <>
+                      Pinned baseline{" "}
+                      <HarnessLink hash={experiment.baseline_hash} />
+                    </>
+                  )}
                 </Text>
               </div>
               <Button
@@ -126,7 +176,9 @@ export function Experiment({ id }: { id: string }) {
                 variant="light"
                 color="teal"
               >
-                {isBusiness ? "View A/B Scorecard & Promotion" : "Open comparison"}
+                {isBusiness
+                  ? "View A/B Scorecard & Promotion"
+                  : "Open comparison"}
               </Button>
             </Group>
             <ol className="stage-track" aria-label="Experiment stages">
@@ -135,7 +187,9 @@ export function Experiment({ id }: { id: string }) {
                 const skipped =
                   stage.id === "validate" && experiment.mode === "fixture";
                 const label = isBusiness ? stage.businessLabel : stage.label;
-                const detailText = isBusiness ? stage.businessDetail : stage.detail;
+                const detailText = isBusiness
+                  ? stage.businessDetail
+                  : stage.detail;
                 return (
                   <li
                     key={stage.id}
@@ -161,7 +215,9 @@ export function Experiment({ id }: { id: string }) {
             </ol>
             <Text size="sm" aria-live="polite">
               {experiment.terminal_runs} of {experiment.scheduled_runs}{" "}
-              {isBusiness ? "investigation questions completed" : "scheduled runs complete"}
+              {isBusiness
+                ? "investigation questions completed"
+                : "scheduled runs complete"}
             </Text>
             <Progress
               mt="sm"
@@ -253,14 +309,24 @@ export function Experiment({ id }: { id: string }) {
                     </Text>
                   )}
                   {proposal.patch?.map((patch) => {
-                    const isInspection = patch.path === "/workflow/schema_inspection";
+                    const isInspection =
+                      patch.path === "/workflow/schema_inspection";
                     const isGuidance = patch.path === "/prompt/task_guidance";
-                    const isVerify = patch.path === "/workflow/verify_numeric_answers";
+                    const isVerify =
+                      patch.path === "/workflow/verify_numeric_answers";
                     return (
-                      <div key={patch.path} style={{ marginTop: 4, marginBottom: 4 }}>
+                      <div
+                        key={patch.path}
+                        style={{ marginTop: 4, marginBottom: 4 }}
+                      >
                         {isBusiness ? (
                           <Text size="sm">
-                            <span style={{ fontWeight: 650, color: "var(--mantine-color-teal-7)" }}>
+                            <span
+                              style={{
+                                fontWeight: 650,
+                                color: "var(--mantine-color-teal-7)",
+                              }}
+                            >
                               {isInspection
                                 ? "💡 Automated Table Inspection"
                                 : isGuidance
@@ -276,7 +342,8 @@ export function Experiment({ id }: { id: string }) {
                           </Text>
                         ) : (
                           <Text size="sm" className="wrap">
-                            <Code>{patch.path}</Code> → {JSON.stringify(patch.value)}
+                            <Code>{patch.path}</Code> →{" "}
+                            {JSON.stringify(patch.value)}
                           </Text>
                         )}
                       </div>
